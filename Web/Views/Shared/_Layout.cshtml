@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="~/Content/reset.css" rel="stylesheet" />
+    <link href="~/Common/EasyUI/themes/gray/easyui.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="~/Common/EasyUI/themes/icon.css">
+    <link href="~/Common/EasyUI/themes/color.css" rel="stylesheet" />
+      
+    <link href="~/Common/MainTabs/css/public.css" rel="stylesheet" />
+    <link href="~/Common/MainTabs/css/houtai.css" rel="stylesheet" /> 
+    <link href="~/Common/MainTabs/css/smartMenu.css" rel="stylesheet" />
+     
+    <script type="text/javascript" src="~/Common/MainTabs/js/jquery.min.js"></script>  
+    <script type="text/javascript" src="~/Common/EasyUI/jquery.easyui.min.js"></script>
+    <script src="~/Common/EasyUI/locale/easyui-lang-zh_CN.js"></script>
+    <script src="~/Common/Common.js"></script>
+    <style type="text/css">
+        
+        
+        #header { 
+            width:100%; 
+            height:30px;
+            padding-top:10px;
+            padding-bottom:10px;
+            text-align:center;
+        }
+
+     .link_column{
+        color:#1bb03a;text-decoration:underline;
+    }
+
+    .permission {
+     display:none;
+    }
+
+    </style>
+     
+
+
+</head>
+<body> 
+    <div id="admin">
+        <div id="header" style="width:100%;height:80px;background:#808080;
+            text-align:center;"> 
+          <span style="font-size:45px;color:ivory;">上海赛迅数据处理系统</span>  
+            <div style="float:right;width:300px;padding-top:15px;">
+                <span id="spCurUser" style="font-size:15pt;color:#f2fdd9;margin-right:40px;"></span>
+                <span id="spExitLogin" style="font-size:12pt;color:#ffd800;cursor:pointer" onclick="loginOut();">退出登录</span>
+            </div>
+</div>
+     <div class="ad-menu" id="ad-menu">
+                    <div class="ad-list">
+                        <ul>
+                            <li id="liNote">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>
+                                <span id="spNote" style="font-size:11pt;">备忘录</span>
+                                <span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddNote" class="permission">
+                                        <a href="@Url.Content("~/Note/Index")" class="dd-item">备忘列表
+                                        <span class="scm dd-ar"></span></a>
+                                    </dd> 
+                                </dl>
+                            </li>
+                            <li id="liOrder">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>订单管理<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddNewOrder" class="permission">
+                                        <a href="@Url.Content("~/Order/Add")" class="dd-item">新建订单<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                    <dd id="ddOrderList">
+                                        <a href="@Url.Content("~/Order/Index")" class="dd-item">订单列表<span class="scm dd-ar"></span></a>
+                                    </dd> 
+                                    <dd id="ddAgreementList">
+                                        <a href="@Url.Content("~/Agreement/Index")" class="dd-item">合同列表<span class="scm dd-ar"></span></a>
+                                    </dd>
+
+                                    <dd id="ddOrderProgress">
+                                        <a href="@Url.Content("~/Order/Progress")" class="dd-item">订单进度<span class="scm dd-ar"></span></a>
+                                    </dd> 
+
+
+                                    <dd id="ddOrderMyListt">
+                                        <a href="@Url.Content("~/OrderProcess/MyList")" class="dd-item">我完成的工艺<span class="scm dd-ar"></span></a>
+                                    </dd>
+
+                                    <dd id="ddOrderProcess" style="display:none">
+                                        <a href="@Url.Content("~/Order/Process")" class="dd-item">流程配置<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                </dl>
+                            </li>
+                            <li id="liSuppliers">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>供应商管理<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddSuppliers">
+                                        <a href="@Url.Content("~/Suppliers/Index")" class="dd-item">供应商列表<span class="scm dd-ar"></span></a>
+
+                                    </dd> 
+                                </dl>
+                            </li>
+                            <li id="liCustomer">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>客户管理<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddCustomerList">
+                                        <a  href="@Url.Content("~/Customer/Index")" class="dd-item">客户列表<span class="scm dd-ar"></span></a>
+                                    </dd> 
+                                    <dd id="ddCustomerAddress">
+                                        <a href="@Url.Content("~/Address/Index")" class="dd-item">收货地址管理<span class="scm dd-ar"></span></a>
+                                    </dd> 
+                                </dl>
+                            </li>
+
+                            <li id="liStatistics">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>数据统计<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddCustomer">
+                                        <a href="@Url.Content("~/Statistic/CustomerPay")" 
+                                        class="dd-item">客户货款<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                    <dd id="ddSupplier">
+                                        <a href="@Url.Content("~/Statistic/SupplierPay")" class="dd-item">供货商货款<span class="scm dd-ar">
+                                            </span></a>
+                                    </dd> 
+                                </dl>
+                            </li>
+
+
+                            <li id="liMyInfo">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>信息管理<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddMyInfo">
+                                        <a href="@Url.Content("~/Company/Index")" class="dd-item">公司信息<span class="scm dd-ar"></span></a>
+                                    </dd> 
+                                </dl>
+                            </li> 
+                            <li id="liUserManager">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>用户管理<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddPermission">
+                                        <a href="@Url.Content("~/User/Permission")" class="dd-item">权限管理<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                    <dd id="ddRole">
+                                        <a href="@Url.Content("~/User/Role")" class="dd-item">角色管理<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                    <dd id="ddUser">
+                                        <a href="@Url.Content("~/User/Users")" class="dd-item">用户管理<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                </dl>
+                            </li>
+                            <li id="liSystemManager">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>数据备份<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddDatabase">
+                                        <a href="@Url.Content("~/SystemManager/Database")" class="dd-item">数据备份<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                </dl>
+                            </li> 
+                        </ul>
+                    </div>
+                </div>
+                <div class="ad-comment-box" id="ad-comment">
+                    @RenderBody()
+                </div>
+            </div>
+  
+    <script type="text/javascript" src="~/Common/MainTabs/js/contabs.js"></script>
+    <script type="text/javascript" src="~/Common/MainTabs/js/maintabs.js"></script>
+    <script type="text/javascript" src="~/Common/MainTabs/js/jquery-smartMenu-min.js"></script>
+    <script type="text/javascript" src="~/Common/MainTabs/js/jquery.nicescroll.min.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () { 
+                $(".ad-menu").niceScroll({cursorborder:"0 none",cursorcolor:"#1a1a19",cursoropacitymin:"0",boxzoom:false}); 
+        })
+
+         
+    </script>
+     
+</body>
+
+</html>

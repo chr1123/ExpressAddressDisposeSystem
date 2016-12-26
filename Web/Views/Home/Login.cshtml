@@ -1,0 +1,141 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta name="renderer" content="webkit">
+    <title>登陆</title> 
+    <link href="~/Common/EasyUI/themes/gray/easyui.css" rel="stylesheet" />
+    <link href="~/Common/EasyUI/themes/color.css" rel="stylesheet" />
+    <script src="~/Common/EasyUI/jquery.min.js"></script>
+    <script src="~/Common/EasyUI/jquery.easyui.min.js"></script>  
+    <script src="~/Scripts/cloud.js"></script>
+    <style type="text/css">
+        /*cloud*/
+        #mainBody {width:100%;height:100%;position:absolute;z-index:-1;}
+        .cloud {position:absolute;top:0px;left:0px;width:100%;height:100%;background:url(@Url.Content("~/Common/Images/cloud.png")) no-repeat;z-index:1;opacity:0.5;}
+        #cloud2 {z-index:2;}
+        .loginbody{background:url(@Url.Content("~/Common/Images/loginbg3.png")) no-repeat center center; width:100%;overflow:hidden;}
+        .loginbox{width:692px; height:336px; background:url(@Url.Content("~/Common/Images/logininfo.png")) no-repeat; margin-top:30px;}
+        .loginuser{width:299px;height:48px;line-height:48px;background:url(@Url.Content("~/Common/Images/loginuser.png")) no-repeat; border:none;padding-left:44px;padding-top:10px;margin-bottom:15px;}
+        .loginpwd{width:299px; height:48px;line-height:48px;background:url(@Url.Content("~/Common/Images/loginpassword.png")) no-repeat; border:none;padding-left:44px;padding-top:10px;margin-bottom:15px;}
+        .loginbtn{display:block;margin-left:232px;text-align:center;width:111px;height:35px; background:url(@Url.Content("~/Common/Images/buttonbg.png")) repeat-x; font-size:14px; font-weight:bold; color:#fff;line-height:35px;}
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            $('.loginbox').css({ 'position': 'absolute', 'left': ($(window).width() - 692) / 2, 'top': ($(window).height() - 336) / 2 });
+            $(".loginbody").css("height", $(window).height());
+            $(window).resize(function () {
+                $('.loginbox').css({ 'position': 'absolute', 'left': ($(window).width() - 692) / 2 });
+            });
+            $("#name,#pwd,#tbYzm").keydown(function (e) {
+                if (e.which == 13) {
+                    userlogin();
+                }
+            });
+        });
+        function reloadcode() {
+            $("#validimg").attr('src', '@Url.Content("~/Home/Identifying?")' + Math.random());
+        }
+
+        function userlogin() { 
+            var loginstr = { username: '', password: '', idencode: '' };
+            loginstr.username = $("#name").val();
+            loginstr.password = $("#pwd").val();
+            loginstr.idencode = $("#tbYzm").val();
+            if ($.trim(loginstr.username) == "") {
+                alert("请输入用户名");
+                return;
+            }
+            else if ($.trim(loginstr.password) == "") {
+                alert("请输入密码");
+                return;
+            }
+           // else if ($.trim(loginstr.idencode) == "") {
+             //   alert("请输入验证码");
+            //    return;
+          //  }
+
+            $.ajax({
+                url: "@Url.Content("~/User/UserLogin")",
+                type: "POST",
+            dataType: 'json',
+            data: {
+                username: loginstr.username,
+                password: loginstr.password,
+                idencode: loginstr.idencode
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '努力登录中'
+                });
+            },
+            success: function (data, textStatus) {
+                switch (data) {
+                    case -1:
+                        $.messager.alert('提示', '验证码错误', 'error');
+                        break;
+                    case 0:
+                        $.messager.alert('提示', '用户名或密码错误', 'error');
+                        reloadcode();
+                        break;
+                    default:
+                        self.location = '@Url.Content("~/Order/Dispose")';
+                        break;
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', errorThrown, 'error'); }
+        });
+            // '操作出错'
+        } 
+    </script>
+  
+</head>
+
+<body style="background-color:#1c77ac; background-image:url(@Url.Content("~/Common/Images/light.png")); background-repeat:no-repeat; background-position:center top; overflow:hidden;">
+    <div id="mainBody">
+        <div id="cloud1" class="cloud"></div>
+        <div id="cloud2" class="cloud"></div>
+    </div>
+    <div class="loginbody">
+
+        <div class="loginbox">
+            <div style="margin-top:88px; padding-left:285px;">
+                <div class="loginuser">
+                    <input id="name" style="font-size:14px;font-weight:bold;border:none; background-color:#ecf5fa;width:280px;height:30px;" name="" type="text" value="" />
+                </div>
+                <div class="loginpwd">
+                    <input name="" id="pwd" type="password" value="" style="font-size:14px;color:#90a2bc;font-weight:bold;border:none;background-color:#ecf5fa;width:280px;height:30px;" />
+                </div>
+                <div style="width:343px;height:48px;line-height:48px;">
+                    <input id="tbYzm" type="text" style="width:88px;border:1px solid #bac7d2;font-size:14px;padding:5px 8px;" />
+                    <img alt="验证码" style="vertical-align:middle;cursor:pointer;" id="validimg" onclick="reloadcode()" src="@Url.Action("Identifying")" />  
+                </div>
+                <table style="width:343px;margin-top:-40px;">
+                    <tr>
+                        <td style="width:50%;text-align:left;">
+                           
+                        </td>
+                        <td style="width:50%;text-align:right;">
+                            <a href="javascript:void(0)" onclick="userlogin()" style="margin-left:82px;" class="loginbtn">登录</a>
+                        </td>
+                    </tr>
+                </table>
+
+
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>
+
+

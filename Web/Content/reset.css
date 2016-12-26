@@ -1,0 +1,49 @@
+﻿/* reset */
+html,body,h1,h2,h3,h4,h5,h6,div,dl,dt,dd,ul,ol,li,p,blockquote,pre,hr,figure,table,caption,th,td,form,fieldset,legend,input,button,textarea,menu{margin:0;padding:0;}
+header,footer,section,article,aside,nav,hgroup,address,figure,figcaption,menu,details{display:block;}
+table{border-collapse:collapse;border-spacing:0;border:0px;}
+caption,th{text-align:left;font-weight:normal;}
+html,body,fieldset,img,iframe,abbr{border:0;}
+i,cite,em,var,address,dfn{font-style:normal;}
+[hidefocus],summary{outline:0;}
+li{list-style:none;}
+h1,h2,h3,h4,h5,h6,small{font-size:100%;}
+sup,sub{font-size:83%;}
+pre,code,kbd,samp{font-family:inherit;}
+q:before,q:after{content:none;}
+textarea{overflow:auto;resize:none;}
+label,summary{cursor:default;}
+a,button{cursor:pointer;}
+h1,h2,h3,h4,h5,h6,em,strong,b{font-weight:bold;}
+del,ins,u,s,a,a:hover{text-decoration:none;}
+body,textarea,input,button,select,keygen,legend{outline:0;}
+body{ background:#fff;font-family:arial,\5FAE\8F6F\96C5\9ED1,\5b8b\4f53;font-size:14px;}
+h1{ font-family:arial,\5FAE\8F6F\96C5\9ED1,\5b8b\4f53; font-size:22px; line-height:48px; text-align:center;}
+h2{ font-family:arial,\5FAE\8F6F\96C5\9ED1,\5b8b\4f53; font-size:18px; text-align:center;}
+#header {margin:0 auto; height:88px;width:1000px;background:#f1f1f1 url(../Common/images/topbg.jpg) repeat-x;}
+#mainContent { margin:0 auto;margin-bottom:5px;width:980px; background:#f1f1f1;padding:10px;}
+#sidebar { float:left; width:200px; }
+#content { margin-left:205px !important; margin-left:202px; background:#ffa;}
+#footer { height:60px; background:#9c6;}
+input::-ms-clear{display:none;}
+input::-ms-reveal{display:none;}
+.place {
+    height: 27px;
+    vertical-align:middle;
+    background: url(../Common/images/righttop.gif) repeat-x;
+    margin:0 auto;
+    width:990px;
+    padding:8px 5px 5px 5px;
+    margin-top:-3px;
+}
+.clearfix:after{
+  content: "020"; 
+  display: block; 
+  height: 0; 
+  clear: both; 
+  visibility: hidden;  
+  }
+
+.clearfix {
+  zoom: 1; 
+  }

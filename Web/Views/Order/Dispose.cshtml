@@ -1,0 +1,317 @@
+﻿
+@{
+    ViewBag.Title = "面单识别处理";
+    Layout = "~/Views/Shared/_LayoutDispose.cshtml";
+} 
+<style type="text/css">
+    /*.combo-arrow{display:none}隐藏下拉箭头*/
+
+    .ul-list {
+        width:400px;
+      padding-top:4px;padding-bottom:4px;
+    }
+      .ul-list li{
+          
+        font-size:12pt; 
+        padding-left:10px;padding-right:10px;
+    }
+        .ul-list li:hover{
+        font-size:13pt;
+        color:#ff6a00 ;
+        background:#f0f0f0;
+        cursor:pointer;
+    }
+
+</style>
+@model  EADS.Model.Model_Order 
+
+<div style="display:flex;flex-direction:column;align-items:center;">
+
+   
+        <div id="divOrder" style="width:80%;display:none;margin-top:20px;">
+            <img id="imgOrder" style="width:100%;border:1px solid red"
+                 @if (Model != null) { <text>src="@Model.ImagePath"</text> }  />
+    
+                    <div style="width:500px;text-align:left;margin:auto;margin-top:40px;">
+                        <div>
+                          
+                         
+                </div>
+                <div style="margin-top:20px;">
+                  
+                    
+                </div>
+                @*<div style="margin-top:20px;display:none">
+                    <span style="margin-right:12px;">收件地址：</span>
+                    <input id="tvAddress" class="easyui-textbox"
+                           data-options="prompt:'地址录入完毕后按Enter键提交进行下一单'"
+                           style="width:400px;height:32px">
+                </div>*@
+                
+                        <div style="margin-top:20px;">
+
+                            <table style="">
+                                <colgroup>
+                                    <col width="120"/>
+                                    <col />
+                                </colgroup>
+                                <tr>
+                                    <td>
+                                        <span style="margin-right:12px;">识别结果：</span>
+                                    </td>
+                                    <td>
+                                        <select id="combResult" class="easyui-combobox" style="width:150px;">
+                                            <option value="0">识别成功</option>
+                                            <option value="1">识别失败-图片空白</option>
+                                            <option value="2">识别失败-其他原因</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr style="height:60px;">
+                                    <td>
+                                        <span style="margin-left:0px;">目的地城市：</span>
+                                    </td>
+                                    <td>
+                                        <input id="tvDistination" class="easyui-textbox"
+                                               data-options="prompt:'请输入目的城市'"
+                                               style="width:150px;height:32px">
+                                    </td>
+                                </tr>
+                                <tr  style="vertical-align:top;">
+                                    <td >
+                                        <span style="margin-right:12px;vertical-align:top;">收件地址：</span>
+                                    </td>
+                                    <td>
+                                        <div >
+                                           
+                                            <input id="tvAddress"  style="width:400px;height:28px;font-size:12pt;padding-left:3px;padding-right:3px;"
+                                                    placeholder="地址录入完毕后按Enter键提交进行下一单"  />
+                                            @*<input id="tvAddress" class="easyui-textbox"
+                                                   data-options="prompt:'地址录入完毕后按Enter键提交进行下一单',
+                                                   "
+                                                   style="width:400px;height:32px">*@
+                                        </div>
+                                       
+                                        <div id="divMatchList" style="background:#fff;border:1px solid #999;margin-top:5px;display:none;">
+                                            <ul  id="ulMatchList" class="ul-list" > 
+                                                
+                                            </ul>
+                                        </div>
+                                        
+                                    </td>
+                                </tr>
+                            </table>
+                               
+                        </div>
+
+                        
+                <div style="margin-top:20px;">
+                            <span id="spCount" style="font-size:12pt;color:#ff6a00"></span> 
+                </div>
+            </div>
+        </div>
+      
+        <div  id="divNoOrder" style="margin-top:200px;font-size:22pt;text-align:center;display:none;">
+            暂无可处理订单，请在 <a href="~/Order/Index" style="color:blue">接单列表</a> 中接单
+            <div style="color:#006400;cursor:pointer;margin-top:30px;" onclick="takeOrder(20);">
+                点击直接领取20条
+            </div>
+        </div>
+     
+     
+</div>
+ 
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liOrder").addClass("over");
+        $("#ddOrderDispose").addClass("on");
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+                     });
+
+        $('#combResult').combobox({
+                     editable:false
+        });
+       
+ 
+        $("#tvAddress").keyup(function(event) {  
+            if(event.keyCode == 13){ //回车键 提交 
+                submitOrder();
+            }else{
+                matchAddress($(this).val()); 
+            }  
+        });
+         
+        $('#tvDistination').textbox('textbox').focus();
+
+       @{
+                         if (Model == null)
+                         {
+                <text>
+        nodata=true;
+                </text>
+                         }
+                         else {
+                <text>
+        nodata=false;
+        </text>
+                         }
+                     }
+     
+        if(nodata){ 
+            $("#divOrder").hide();
+            $("#divNoOrder").show();　
+                     }else{
+            $("#divOrder").show();
+            $("#divNoOrder").hide();
+                     }
+
+                 });
+
+    var nodata = true;
+
+                 var orderModel = {
+        ID:@ViewBag.ID,
+        ResultCode:0,
+        DestinationCity: '',
+        RecipientAddress: ''
+    };
+
+                 function clearCurrentOrder() {
+                     orderModel = {
+                     ID: 0,
+            ResultCode:0,
+            DestinationCity: '',
+            RecipientAddress: ''
+                     };
+
+        $("#combResult").combobox('setValue','0');
+        $("#tvDistination").textbox("setValue",'');
+        $("#tvAddress").val('');
+        $('#tvAddress').focus();
+                 }
+
+
+                 function submitOrder() {
+                     orderModel.ResultCode = $("#combResult").combobox('getValue');
+                     orderModel.RecipientAddress = $("#tvAddress").val();
+                     orderModel.DestinationCity = $("#tvDistination").textbox("getValue").trim();
+                     if(orderModel.ResultCode==0){
+                         //if(orderModel.DestinationCity.trim()==""){
+                         //    alert("请填写目的城市！");
+                         //    return;
+                         //}
+                         if(orderModel.RecipientAddress.trim()==""){
+                             alert("请填写地址！");
+                             return;
+                         }
+                     }
+
+        $.ajax({
+                     url: '@Url.Content("~/Order/SubmitOrder")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                         strModel: JSON.stringify(orderModel)
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                             title: '请稍候',
+                    text: '正在接单...'
+                });
+                         },
+            success: function (data, textStatus) {
+                             if (data.result) {
+                                 clearCurrentOrder();
+                                 //orderCount waitForHandle orderID  imgSrc
+                                 if (data.orderID == 0) {
+                                     //订单已全部完成
+                                     $("#divOrder").hide();
+                                     $("#divNoOrder").show();
+                                   } else {
+                                     $("#imgOrder").attr("src", data.imgSrc);
+                                     orderModel.ID = data.orderID; 
+                                     $("#spCount").text("剩余【"+data.waitForHandle+"】单/共接【"+data.orderCount+"】单");  
+                                 } 
+                }
+                else {
+                    $.messager.alert('提示', data.msg, 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+
+    function takeOrder(takeRow) {
+
+        $.ajax({
+            url: '@Url.Content("~/Order/TakeOrder")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                rows: takeRow
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在接单...'
+                });
+            },
+            success: function (data, textStatus) {
+                if (data.result>0) {
+                    location.reload();
+                }
+                else {
+                    $.messager.alert('提示', data.msg, 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+
+
+    function matchAddress(address){
+        if(address.indexOf("'") > 0 ){
+            return false;
+        } 
+        if (address.length == 0){return ;}
+        $.ajax({
+            url: '@Url.Content("~/Address/GetMatchAddress")',
+            type: "POST",
+            dataType: 'json',
+            data: { 
+                Address:address
+            },
+            success: function(data){  
+                if(data.rows!=null && data.rows.length>0){
+                    $("#ulMatchList").children().remove();
+                    $("#divMatchList").fadeIn();
+                    for(i=0;i<data.rows.length;i++){ 
+                        var li = $("<li></li>").text(data.rows[i].Address);
+                        li.click(function(){
+                            $("#tvAddress").val($(this).text());  
+                            $("#tvAddress").focus();  
+                            matchAddress($(this).text()) 
+                        });
+                        $("#ulMatchList").append(li);
+                    }
+                }else{
+                    $("#divMatchList").hide();
+                    $("#ulMatchList").children().remove();
+                }
+            },
+            error: function(){
+               // error.apply(this, arguments);
+            }
+        });
+    }
+     
+</script>

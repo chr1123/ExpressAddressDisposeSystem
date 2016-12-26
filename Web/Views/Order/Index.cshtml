@@ -1,0 +1,263 @@
+﻿
+@{
+    ViewBag.Title = "订单列表";
+    Layout = "~/Views/Shared/_LayoutDispose.cshtml";
+}
+<style type="text/css">
+    .label {
+        height: 40px;
+    }
+
+    .datagrid-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .cname {
+        font: bold 16px 微软雅黑;
+        color: #464040; 
+       
+    }
+</style>
+
+<div style="padding-top:20px;margin-left:50px;margin-bottom:20px;">
+
+    <span>接单条数</span>
+    <select id="combTakeSize" class="easyui-combobox" style="width:80px;">
+        <option value="10">10条</option>
+        <option value="50">50条</option>
+        <option value="100">100条</option>
+        <option value="200">200条</option>
+        <option value="500">500条</option>
+        <option value="1000">1000条</option>
+    </select>
+    <a id="btn" href="javascript:void(0)" class="easyui-linkbutton c7" data-options="iconCls:'icon-save'"
+       style="width:60px;" onclick="takeOrder();">接单</a>
+
+   
+   
+
+    <div style="margin-top:30px;">
+        <span style="margin-right:20px;font-size:12pt;">查询订单</span>
+        <span>面单状态:</span>
+        <select id="combState" class="easyui-combobox" style="width:150px;">
+            <option value="">所有</option>
+            <option value="0">识别成功</option>
+            <option value="1">识别失败(图片空白)</option>
+            <option value="2">识别失败(其他原因)</option>
+            <option value="3">识别成功(部分模糊)</option>
+            <option value="99">待处理</option>
+        </select>
+        <span>接单时间:</span>
+        <input id="dtTakeTimeStart" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>至</span>
+        <input id="dtTakeTimeEnd" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>处理时间:</span>
+        <input id="dtHandleTimeStart" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>至</span>
+        <input id="dtHandleTimeEnd" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>单号:</span>
+        <input id="tbNO"class="easyui-textbox" data-options="prompt:'输入查询单号...'" style="width:240px;height:32px">
+        <a href="javascript:void(0)" onclick="select();" class="easyui-linkbutton c1" data-options="iconCls:'icon-search'" style="width:80px">查询</a>
+        <a href="javascript:void(0)" onclick="clearSelect();" class="easyui-linkbutton c3" data-options="iconCls:'icon-remove'" style="width:80px">清空查询</a>
+
+    </div>
+    
+</div>
+
+
+<table id="DataGride" style="font-size: 11pt;height:680px;"></table>
+
+<div id="editWin" class="easyui-window" title="订单信息"
+     data-options="modal:true,closed:true,minimizable:false"
+     style="width:80%;height:80%;padding:20px;display:none;text-align:center;background:#eee">
+
+    <div>
+        <span id="spAddress" style="font-size:24pt;"> </span>
+    </div> 
+    <img id="imgOrder" style="width:80%;border:1px solid red;margin-top:30px;" />
+      
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liOrder").addClass("over");
+        $("#ddOrderList").addClass("on");
+        ShowDataGride();
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+        });
+        $('#combTakeSize').combobox({
+            editable: false
+        });
+        $('#combState').combobox({
+            editable: false
+        }); 
+    });
+
+    var jsonParas = {
+        "resultCode": '',// 表示不限
+        "takeTimeStart": '',//
+        "takeTimeEnd": '',
+        "handTimeStart": '',
+        "handTimeEnd": '',
+        "orderNO": '',
+    };
+
+    function select() {
+        jsonParas.resultCode = $("#combState").combobox('getValue');
+        jsonParas.takeTimeStart = $("#dtTakeTimeStart").datetimebox('getValue');
+        jsonParas.takeTimeEnd = $("#dtTakeTimeEnd").datetimebox('getValue');
+        jsonParas.handTimeStart = $("#dtHandleTimeStart").datetimebox('getValue');
+        jsonParas.handTimeEnd = $("#dtHandleTimeEnd").datetimebox('getValue');
+        jsonParas.orderNO = $("#tbNO").textbox('getValue');
+        ShowDataGride();
+    }
+    
+    function clearSelect() {
+        jsonParas = {
+            "resultCode": '',// 表示不限
+            "takeTimeStart": '',//
+            "takeTimeEnd": '',
+            "handTimeStart": '',
+            "handTimeEnd": '',
+            "orderNO": '',
+        };
+        $("#combState").combobox('setValue','');
+        $("#dtTakeTimeStart").datetimebox('clear');
+        $("#dtTakeTimeEnd").datetimebox('clear');
+        $("#dtTakeTimeEnd").datetimebox('clear');
+        $("#dtHandleTimeStart").datetimebox('clear');
+        $("#dtHandleTimeEnd").datetimebox('clear');
+        ShowDataGride();
+    }
+
+    function ShowDataGride() {
+   
+        $('#DataGride').datagrid({
+            loadMsg: '数据加载中,请稍后...',
+            nowrap: false,
+            striped: true,
+            collapsible: false,
+            remoteSort: true,
+            rownumbers: true,
+            fitColumns: true,
+            singleSelect: false,
+            queryParams: jsonParas,
+            url: '@Url.Content("~/Order/GetList")',
+            columns: [
+            [
+              {
+                  field: 'OrderNO', title: '单号', halign: 'center', align: 'center', width: 80, sortable: false, resizable: false,
+                  formatter: function (value, row, index) {
+                      
+                      return "<span style='cursor:pointer;font-size:12pt;color:#0026ff' onclick='showDialog(" + index + ")'>" + value + "</span>";
+                  }
+              },
+               {
+                   field: 'ResultCode', title: '状态', halign: 'center', align: 'center', width: 30, sortable: false, resizable: false, hidden: false,
+                   formatter: function (value, row, index) {
+                       switch (value) {
+                           case "0"://识别成功
+                               return "<span style='color:#008000'>识别成功</span>";
+                               break;
+                           case "1"://处理中
+                               return "<span style='color:#FFA500'>识别失败(图片空白)</span>";
+                               break;
+                           case "2"://已处理 待回传
+                               return "<span style='color:#FFA500'>识别失败(其他原因) </span>";
+                               break;
+                           case "3"://完成
+                               return "<span style='color:#228B22'>识别成功(部分模糊)</span>";
+                               break;
+                           case "99"://待处理
+                               return "<span style='color:#696969'>待处理</span>";
+                               break;
+                           default:
+                               return "<span style='color:#800000'>未知</span>";
+                       }
+                   }
+               },
+              { field: 'DestinationCity', title: '目的城市', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false }, 
+              { field: 'RecipientAddress', title: '收件地址', halign: 'center', align: 'left', width: 120, sortable: false, resizable: false },
+              { field: 'TakeTime', title: '接单时间', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false },
+             { field: 'HandleTime', title: '处理时间', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false }, 
+                {
+                    field: 'ID', title: '操作', halign: 'center', align: 'center', width: 30, sortable: false, resizable: false,hidden:true,
+                    formatter: function (value, row, index) {
+                        switch (row['State']) {
+                            case "0"://新单 
+                                return "<span style='color:#fe9923' onclick='handleOrder(" + index + ")'>接单</span>";
+                                break;
+                            case "1"://处理中
+                                return "<span style='color:#1c55fb' onclick='handleOrder(" + index + ")'>处理</span>";
+                                break;
+                            case "2"://已处理 待回传
+                                return "<span style='color:#000000'>回传</span>";
+                                break;
+                            case "3"://完成
+                                return "<span style='color:#0bbd24'>已完成</span>";
+                                break;
+                            case "4"://回传失败
+                                return "<span style='color:#fd2b08'>重试回传</span>";
+                                break;
+                            default:
+                                return "<span></span>";
+                        }
+                    }
+                }
+            ]],
+            onClickRow: function (rowIndex, rowData) {
+                $(this).datagrid('unselectRow', rowIndex);
+            },
+            pageList: [10, 15, 20],
+            pageSize: '15',
+            pagination: true
+        }); 
+    }
+     
+      
+
+    function showDialog(index) { 
+        var row = $('#DataGride').datagrid('getRows')[index];
+        $("#imgOrder").attr("src", row["ImagePath"]);
+        $("#spAddress").text(row["DestinationCity"] +"   "+ row["RecipientAddress"]);
+        $('#editWin').window('open');  
+    }
+       
+    function takeOrder() {
+
+        $.ajax({
+            url: '@Url.Content("~/Order/TakeOrder")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                rows: $("#combTakeSize").combobox('getValue')
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在接单...'
+                });
+            },
+            success: function (data, textStatus) {
+                if (data.result > 0) {
+                    $('#DataGride').datagrid('reload');
+                    // cancelHandle(); 
+                }
+                else {
+                    $.messager.alert('提示', data.msg, 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+</script>
