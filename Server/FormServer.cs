@@ -17,7 +17,7 @@ namespace EADS.Server
     {
         public FormServer()  
         { 
-            InitializeComponent();      
+            InitializeComponent();       
         }
         private bool _serverRuning = false; //服务端是否在运行中
         private FileHandler _fileHandler; //文件处理类
