@@ -113,8 +113,8 @@
       
         <div  id="divNoOrder" style="margin-top:200px;font-size:22pt;text-align:center;display:none;">
             暂无可处理订单，请在 <a href="~/Order/Index" style="color:blue">接单列表</a> 中接单
-            <div style="color:#006400;cursor:pointer;margin-top:30px;" onclick="takeOrder(20);">
-                点击直接领取20条
+            <div style="color:#006400;cursor:pointer;margin-top:30px;" onclick="takeOrder(10);">
+                点击直接领取10条
             </div>
         </div>
      
@@ -167,7 +167,7 @@
             $("#divOrder").show();
             $("#divNoOrder").hide();
                      }
-
+        $('#tvAddress').focus();
                  });
 
     var nodata = true;
@@ -277,12 +277,30 @@
         });
     }
 
+    function takeCityFromAddress(){
+        var address =  $("#tvAddress").val();
+        //从地址中取出目的城市
+        var cityIndex = address.indexOf('市');
+        if(cityIndex>0){ 
+            var proIndex = address.indexOf('省');
+            var startIndex = proIndex>0?proIndex+1:0;
+            var destCity = address.substring(startIndex,cityIndex);
+            $("#tvDistination").textbox("setValue",destCity);
+        }
+    }
 
     function matchAddress(address){
         if(address.indexOf("'") > 0 ){
             return false;
         } 
-        if (address.length == 0){return ;}
+        if (address.trim().length == 0){  
+            $("#divMatchList").hide();
+            $("#ulMatchList").children().remove();
+            return;
+        }
+       
+        takeCityFromAddress();
+
         $.ajax({
             url: '@Url.Content("~/Address/GetMatchAddress")',
             type: "POST",

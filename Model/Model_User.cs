@@ -78,5 +78,11 @@ namespace EADS.Model
 		[DisplayName("备注")]
 		public string Remark { get; set; }
 
-	}
+        [DisplayName("状态")]
+        public int State { get; set; }
+
+        public static int STATE_NORMAL = 0;
+        public static int STATE_FORBIDDEN = 2;
+
+    }
 }

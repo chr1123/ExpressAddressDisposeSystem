@@ -89,6 +89,7 @@ namespace EADS.Server.Handler
                 }
             } 
             _queueOrder.Clear();
+            isFirstLoad = true;
         }
 
         //读取order表中状态为已识别地址待回调的订单 加入队列
@@ -100,7 +101,7 @@ namespace EADS.Server.Handler
                 }
                 if (list != null && list.Count > 0) {
                     lock (_queueOrder)
-                    {
+                    { 
                         foreach (Model_Order order in list)
                         {
                             _queueOrder.Enqueue(order);
@@ -121,93 +122,105 @@ namespace EADS.Server.Handler
             { 
                 if (_queueOrder.Count > 0)
                 {
-                    List<Model_Order> list = new List<Model_Order>();
-                    string ids = "";
-                    lock (_queueOrder) {
-                        while (list.Count < _onceCallbackOrderMaxNum && _queueOrder.Count > 0)
-                        {
-                            Model_Order order = _queueOrder.Dequeue();
-                            list.Add(order);
-                            ids += order.ID + ",";
-                        }
-                    }
-                    if (list.Count == 0) continue;
-                    //此时应该至少得到了一条数据
-                    string postData = XmlHandler.getXmlStrngByList(list, _companyCode,_secureCode);
+
                     try
                     {
-                        string result = HttpHelper.doPostXml(_callbackServerUrl, postData).Trim();
-                        //判断结果 更新数据库
-                        // <list><item><resultCode>1</resultCode></item></list> 1：成功  2：认证失败 3：操作异常 4：数据重复
-                        if (result.Contains("<list><item><resultCode>"))
+                        List<Model_Order> list = new List<Model_Order>();
+                        string ids = "";
+                        lock (_queueOrder)
                         {
-                            result = result.Replace("<list><item><resultCode>", "").Replace("</resultCode></item></list>", "");
-                            switch (result)
+                            while (list.Count < _onceCallbackOrderMaxNum && _queueOrder.Count > 0)
                             {
-                                case "1"://成功 
-                                case "4"://数据重复
-                                    for (int i = 1; i < 4; i++)
-                                    {
-                                        bool update = _bllOrder.UpdateCallbackResult(ids.TrimEnd(','), byte.Parse(result));
-                                        if (update)
-                                        {
-                                            //回传成功
-                                            CallbcakSucceedNum +=list.Count;
-                                            refreshFormNum(); 
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            //更新订单完成状态时失败 尝试3次 仍失败 则记录进Log
-                                            Thread.Sleep(5 * 1000);
-                                            if (i == 3)
-                                                LogHelper.WriteDataLog("订单回调服务器返回成功，但本地数据库状态更新失败，订单ID集合为：" + ids);
-                                            CallbcakSucceedNum += list.Count;
-                                            refreshFormNum();
-                                        }
-                                    }
-                                    break;
-                                case "2"://认证失败
-                                    LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求认证失败，订单ID集合：" + ids);
-                                    LogHelper.WriteLog("postData:" + postData);
-                                    break;
-                                case "3"://操作异常
-                                    LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求返回为操作异常，订单ID集合：" + ids);
-                                    LogHelper.WriteLog("postData:" + postData);
-                                    break;
-                                default:// 
-                                    break;
+                                Model_Order order = _queueOrder.Dequeue();
+                                list.Add(order);
+                                ids += order.ID + ",";
                             }
                         }
-                        else
+                        if (list.Count == 0) continue;
+                        //此时应该至少得到了一条数据
+                        string postData = XmlHandler.getXmlStrngByList(list, _companyCode, _secureCode);
+                        try
                         {
-                            //请求返回未知的数据格式
-                            LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求失败，返回了未知格式的数据，postData："); 
-                            LogHelper.WriteLog(postData);
-                            LogHelper.WriteLog("result :" + result);
+                            string result = HttpHelper.doPostXml(_callbackServerUrl, postData).Trim();
+                            //判断结果 更新数据库
+                            // <list><item><resultCode>1</resultCode></item></list> 1：成功  2：认证失败 3：操作异常 4：数据重复
+                            if (result.Contains("<list><item><resultCode>"))
+                            {
+                                result = result.Replace("<list><item><resultCode>", "").Replace("</resultCode></item></list>", "");
+                                switch (result)
+                                {
+                                    case "1"://成功 
+                                    case "4"://数据重复
+                                        for (int i = 1; i < 4; i++)
+                                        {
+                                            bool update = _bllOrder.UpdateCallbackResult(ids.TrimEnd(','), byte.Parse(result));
+                                            if (update)
+                                            {
+                                                //回传成功
+                                                CallbcakSucceedNum += list.Count;
+                                                refreshFormNum();
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                //更新订单完成状态时失败 尝试3次 仍失败 则记录进Log
+                                                Thread.Sleep(5 * 1000);
+                                                if (i == 3)
+                                                    LogHelper.WriteDataLog("订单回调服务器返回成功，但本地数据库状态更新失败，订单ID集合为：" + ids);
+                                                CallbcakSucceedNum += list.Count;
+                                                refreshFormNum();
+                                            }
+                                        }
+                                        break;
+                                    case "2"://认证失败
+                                        LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求认证失败，订单ID集合：" + ids);
+                                        LogHelper.WriteLog("postData:" + postData);
+                                        break;
+                                    case "3"://操作异常
+                                        LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求返回为操作异常，订单ID集合：" + ids);
+                                        LogHelper.WriteLog("postData:" + postData);
+                                        break;
+                                    default:// 
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                //请求返回未知的数据格式
+                                LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求失败，返回了未知格式的数据，postData：");
+                                LogHelper.WriteLog(postData);
+                                LogHelper.WriteLog("result :" + result);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                            CallbackFailedNum += list.Count;
+                            //请求异常 可能是网络问题   此时这些订单已从队列中移除 可重新加入队列
+                            //if (list.Count > 0) {
+                            //    lock (_queueOrder) {
+                            //        foreach (Model_Order model in list)
+                            //        {
+                            //            _queueOrder.Enqueue(model);
+                            //        }
+                            //    }  
+                            //}
+                            //更新数据库  将这些订单状态还原为2-已处理 待回传
+                            bool update = _bllOrder.UpdateStateAsWaitForCallback(ids.TrimEnd(','));
+                            if (update)
+                            {
+                                OrderHandleNum = OrderHandleNum - list.Count;
+                            }
+                            // LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求异常：" + ex.Message);
+                            //  LogHelper.WriteLog("postData:" + postData);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                         
-                        CallbackFailedNum += list.Count;
-                        //请求异常 可能是网络问题   此时这些订单已从队列中移除 可重新加入队列
-                        //if (list.Count > 0) {
-                        //    lock (_queueOrder) {
-                        //        foreach (Model_Order model in list)
-                        //        {
-                        //            _queueOrder.Enqueue(model);
-                        //        }
-                        //    }  
-                        //}
-                        //更新数据库  将这些订单状态还原为2-已处理 待回传
-                        bool update = _bllOrder.UpdateStateAsWaitForCallback(ids.TrimEnd(','));
-                        if (update) {
-                            OrderHandleNum = OrderHandleNum - list.Count;
-                        }
-                        // LogHelper.WriteLog("OrderHandler-CallbackOrder回调请求异常：" + ex.Message);
-                        //  LogHelper.WriteLog("postData:" + postData);
+                    catch (Exception ex) {
+                        LogHelper.WriteLog("OrderHandler-CallbackOrder line-219："+ex.Message);
+                        
                     }
+
+                   
                 }
                 else
                 {

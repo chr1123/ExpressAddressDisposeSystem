@@ -1,0 +1,277 @@
+﻿
+@{
+    ViewBag.Title = "用户刷单统计";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<style type="text/css">
+    .label {
+        height: 40px;
+    }
+
+    .datagrid-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .cname {
+        font: bold 16px 微软雅黑;
+        color: #464040;  
+    }
+</style>
+
+<div style="padding-top:20px;margin-left:50px;margin-bottom:20px;">
+     
+    <div style="margin-top:30px;"> 
+
+        <span>统计时间类型:</span>
+        <select id="combTimeType" class="easyui-combobox" style="width:100px;"> 
+            <option value="0">接单时间</option>
+            <option value="1">完成时间</option> 
+        </select> 
+        <input id="dtStart" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>至</span>
+        <input id="dtEnd" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+
+        <input id="tbLike"class="easyui-textbox" data-options="prompt:'可输入账号、姓名、电话查询...'" style="width:240px;height:32px">
+        <a href="javascript:void(0)" onclick="select();" class="easyui-linkbutton c1" data-options="iconCls:'icon-search'" style="width:80px">查询</a>
+        <a href="javascript:void(0)" onclick="clearSelect();" class="easyui-linkbutton c3" data-options="iconCls:'icon-remove'" style="width:80px">清空查询</a>
+     
+        <a id="btn" href="javascript:void(0)" class="easyui-linkbutton c6" data-options="iconCls:'icon-save'"
+           style="width:120px;margin-right:140px;float:right" onclick="">导出Excel</a>
+    </div>
+    
+</div> 
+<table id="DataGride" style="font-size: 11pt;height:680px;"></table>
+  
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liUserManager").addClass("over");
+        $("#ddUserOrder").addClass("on");
+        ShowDataGride();
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+        });
+        $('#combTimeType').combobox({
+            editable: false
+        });
+        
+    });
+
+    var jsonParas = {
+        "timeType":'0',
+        "likeValue": '',
+        "timeStart": '',
+        "timeEnd": '' 
+    };
+   
+    function select() { 
+        jsonParas.likeValue = $("#tbLike").textbox('getValue');
+        jsonParas.timeType = $("#combTimeType").combobox('getValue');
+        jsonParas.timeStart = $("#dtStart").datetimebox('getValue');
+        jsonParas.timeEnd = $("#dtEnd").datetimebox('getValue');
+        ShowDataGride();
+    }
+    
+    function clearSelect() {
+        jsonParas = {
+            "timeType": '0',
+            "likeValue": '',
+            "timeStart": '',
+            "timeEnd": ''
+        };  
+        $("#tbLike").textbox('clear');
+        $("#combTimeType").combobox('setValue','0');
+        $("#dtStart").datetimebox('clear');
+        $("#dtEnd").datetimebox('clear');
+        ShowDataGride();
+    }
+
+    function ShowDataGride() {
+   
+        $('#DataGride').datagrid({
+            loadMsg: '数据加载中,请稍后...',
+            nowrap: false,
+            striped: true,
+            collapsible: false,
+            remoteSort: true,
+            rownumbers: true,
+            fitColumns: true,
+            singleSelect: false,
+            queryParams: jsonParas,
+            url: '@Url.Content("~/User/GetUserOrderCountList")',
+            columns: [
+            [
+                { field: 'RealName', title: '姓名', halign: 'center', align: 'left', width: 60, sortable: false, resizable: false },
+              { field: 'UserName', title: '账号', halign: 'center', align: 'left', width: 70, sortable: false, resizable: false },
+              { field: 'OrderCount', title: '接单数', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false },
+              { field: 'WaitForHandleCount', title: '尚未处理单数', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false },
+              { field: 'HandledCount', title: '处理完成单数', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false },
+                {
+                    field: 'UserID', title: '操作', halign: 'center', align: 'center', width: 60, sortable: false, resizable: false, hidden: true,
+                    formatter: function (value, row, index) { 
+                        return "xx";
+                    }
+                }
+            ]],
+            onClickRow: function (rowIndex, rowData) {
+                $(this).datagrid('unselectRow', rowIndex);
+            },
+            pageList: [10, 15, 20],
+            pageSize: '15',
+            pagination: true
+        }); 
+    }
+      
+    var jsonUser = {
+        "UserName": '',
+        "Password": '',
+        "RealName": '',
+        "Phone": '',
+        "Sex": 0,
+        "Age": '20',
+        "Address": '',
+        "Remark": '' 
+    };
+      
+    function addUser() {
+        jsonUser.RealName = $("#tbRealName").textbox('getValue');
+        jsonUser.UserName = $("#tbUserName").textbox('getValue');
+        jsonUser.Password = $("#tbPwd").textbox('getValue');
+        jsonUser.Phone = $("#tbPhone").textbox('getValue');
+        jsonUser.Sex = $("#combSex").combobox('getValue');
+        jsonUser.Age = $("#tbAge").textbox('getValue');
+        jsonUser.Address = $("#tbAddress").textbox('getValue');
+        jsonUser.Remark = $("#tbRemark").textbox('getValue');
+        if (jsonUser.Age == '') {
+            jsonUser.Age = 20;
+        }
+        if (jsonUser.UserName.trim() == '') { 
+            $.messager.alert('提示', '请填写用户名!', 'warning', function () {
+                $('#tbUserName').textbox('textbox').focus();
+            }); 
+            return;
+        }
+        if (jsonUser.Password.trim() == '') {
+            $.messager.alert('提示', '请为该账号设置密码!', 'warning', function () {
+                $('#tbPwd').textbox('textbox').focus();
+            });  
+            return;
+        }
+        $.ajax({
+            url: '@Url.Content("~/User/AddUser")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                strModel: JSON.stringify(jsonUser)
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在添加...'
+                });
+            },
+            success: function (data, textStatus) { 
+                if (data) {
+                    clearUserInput();
+                    $('#addWin').window('close');
+                    ShowDataGride();
+                    $.messager.alert('提示', '添加成功!');
+                    $("#tbRealName").textbox('textbox').focus();
+                }
+                else {
+                    $.messager.alert('提示', '添加失败,该用户名可能已被占用！', 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+
+    function clearUserInput() {
+        $("#tbRealName").textbox('clear');
+        $("#tbUserName").textbox('clear');
+        $("#tbPwd").textbox('clear');
+        $("#tbPhone").textbox('clear');
+        $("#combSex").combobox('clear');
+        $("#tbAge").textbox('clear');
+        $("#tbAddress").textbox('clear');
+        $("#tbRemark").textbox('clear');
+    }
+
+    function updateUserState(userId, state) {
+
+        $.messager.confirm('操作确认', '确定'+state==0?'恢复':'禁用'+'该用户?', function (r) {
+            if (r) {
+                $.ajax({
+                    url: '@Url.Content("~/User/UpdateState")',
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        userId: userId,
+                        state: state
+                    },
+                    beforeSend: function () {
+                        $.messager.progress({
+                            title: '请稍候',
+                            text: '操作进行中...'
+                        });
+                    },
+                    success: function (data, textStatus) {
+                        if (data) { 
+                            ShowDataGride();
+                            $.messager.alert('提示', '操作成功!'); 
+                        }
+                        else {
+                            $.messager.alert('提示', '操作失败！', 'info');
+                        }
+                    },
+                    complete: function () {
+                        $.messager.progress('close');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+                });
+            }
+        }); 
+    }
+
+    function resetPwd(userId) {
+        $.messager.confirm('操作确认', '确定还原该用户密码?', function (r) {
+            if (r) {
+                $.ajax({
+                    url: '@Url.Content("~/User/ResetPassword")',
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        userId: userId,
+                        pwd: '111111'
+                    },
+                    beforeSend: function () {
+                        $.messager.progress({
+                            title: '请稍候',
+                            text: '操作进行中...'
+                        });
+                    },
+                    success: function (data, textStatus) {
+                        if (data) { 
+                            ShowDataGride();
+                            $.messager.alert('提示', '密码重置成功，该用户当前密码为【111111】!'); 
+                        }
+                        else {
+                            $.messager.alert('提示', '操作失败！', 'info');
+                        }
+                    },
+                    complete: function () {
+                        $.messager.progress('close');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+                });
+            }
+        }); 
+    }
+
+</script>

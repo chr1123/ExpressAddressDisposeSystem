@@ -115,8 +115,15 @@ namespace EADS.DBUtility
         /// </summary>
         public void CloseConnect()
         {
-            pMySqlConnection.Close();
-            pMySqlConnection.Dispose();
+            try
+            {
+                pMySqlConnection.Close();
+                pMySqlConnection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(ex.Message); 
+            }  
         }
 
         /// <summary>
@@ -170,6 +177,8 @@ namespace EADS.DBUtility
             }
             catch (Exception e)
             {
+                LogHelper.WriteLog("MYSQLHELPER ExecuteSql 异常:" + e.Message);
+                LogHelper.WriteLog("sql:" + strSql);
                 return -1;
             }
             //finally

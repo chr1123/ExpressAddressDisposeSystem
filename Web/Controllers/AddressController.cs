@@ -21,12 +21,40 @@ namespace EADS.Web.Controllers
 {
     public class AddressController : Controller
     {
-       
+
+
+        public ActionResult List() {
+            return View();
+        }
+         
+        public JsonResult GetList(int page, int rows,string address) {
+            BLL_BaseAddress bll = new BLL_BaseAddress();
+            int total = 0;
+            DataTable dt =  bll.GetList(page, rows, address, out total).Tables[0]; 
+            var query = from p in dt.AsEnumerable()
+                        select new
+                        {
+                            Address = p["Address"].ToString()
+                        };
+            return Json(new { rows = query, total = total }, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult Add(string address) {
+
+            BLL_BaseAddress bll = new BLL_BaseAddress();
+            bool result = bll.Add(address); 
+            return Json(new { result=result }, JsonRequestBehavior.AllowGet);
+
+        }
+
+
         [HttpPost]
         public JsonResult GetMatchAddress(string Address)
         { 
+            if(string.IsNullOrWhiteSpace(Address))
+                return Json(new {}, JsonRequestBehavior.AllowGet);
             BLL_BaseAddress bll = new BLL_BaseAddress();
-            DataTable dt = bll.GetMatchAddress(Address).Tables[0];
+            DataTable dt = bll.GetMatchAddress(Address,30).Tables[0];
             var query = from p in dt.AsEnumerable()
                         select new
                         {

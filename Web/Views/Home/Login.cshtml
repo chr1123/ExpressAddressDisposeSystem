@@ -75,18 +75,18 @@
                 });
             },
             success: function (data, textStatus) {
-                switch (data) {
-                    case -1:
-                        $.messager.alert('提示', '验证码错误', 'error');
-                        break;
-                    case 0:
-                        $.messager.alert('提示', '用户名或密码错误', 'error');
-                        reloadcode();
-                        break;
-                    default:
-                        self.location = '@Url.Content("~/Order/Dispose")';
-                        break;
-                }
+                if (data.result) {
+                    switch (data.group) {
+                        case 1:
+                            self.location = '@Url.Content("~/RealTime/Index")';
+                            break;
+                        default:
+                            self.location = '@Url.Content("~/Order/Dispose")';
+                            break;
+                    }
+                } else {
+                    $.messager.alert('提示', data.msg, 'error');
+                } 
             },
             complete: function () {
                 $.messager.progress('close');

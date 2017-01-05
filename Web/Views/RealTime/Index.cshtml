@@ -1,0 +1,286 @@
+﻿
+@{
+    ViewBag.Title = "实时数据";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<style type="text/css">
+    .label {
+        height: 40px;
+    }
+
+    .datagrid-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .spOrderCount {
+        font: bold 11px 微软雅黑;
+        color: #464040; 
+       
+    }
+</style>
+<script src="~/Scripts/chart.min.js"></script>
+
+<div style="margin-left:50px;margin-bottom:20px;vertical-align:top;padding-top:20px;">
+
+    <table style="vertical-align:top;width:90%;text-align:left;font-size:12pt;">
+        <colgroup>
+            <col width="140"/>
+            <col width="90" />
+            <col width="70" />
+            <col width="90" />
+            <col width="70" />
+            <col width="90" />
+            <col width="70" />
+            <col width="90" />
+            <col width="70" />
+            <col width="90" />
+            <col width="80" />
+            <col  />
+        </colgroup> 
+        <tr style="height:32px;">
+            <td>
+                平台库中总单数：
+            </td>
+            <td>
+                <span id="spTotal" class="spOrderCount"></span>
+            </td>
+            <td>
+                待接单：
+            </td>
+            <td>
+                <span id="spNewOrderCount" class="spOrderCount"></span>
+            </td>
+            <td>
+                已接单：
+            </td>
+            <td>
+                <span id="spTakeOrderCount" class="spOrderCount"></span>
+            </td>
+            <td>
+                已处理：
+            </td>
+            <td>
+                <span id="spHandleOverCount" class="spOrderCount"></span>
+            </td>
+            <td>
+                待处理：
+            </td>
+            <td>
+                <span id="spWaitForCallbackCount" class="spOrderCount"></span>
+            </td>
+            <td>
+                回传完毕：
+            </td>
+            <td>
+                <span id="spFinishedCount" class="spOrderCount"></span>
+            </td> 
+        </tr>
+        <tr style="height:32px;">
+            <td>
+                今日订单总数：
+            </td>
+            <td>
+                <span id="spTotalToday" class="spOrderCount"></span>
+            </td>
+            <td>
+                待接单：
+            </td>
+            <td>
+                <span id="spNewOrderCountToday" class="spOrderCount"></span>
+            </td>
+            <td>
+                已接单：
+            </td>
+            <td>
+                <span id="spTakeOrderCountToday" class="spOrderCount"></span>
+            </td>
+            <td>
+                已处理：
+            </td>
+            <td>
+                <span id="spHandleOverCountToday" class="spOrderCount"></span>
+            </td>
+            <td>
+                待处理：
+            </td>
+            <td>
+                <span id="spWaitForHandleCountToday" class="spOrderCount"></span>
+            </td>
+            <td>
+                回传完毕：
+            </td>
+            <td>
+                <span id="spFinishedCountToday" class="spOrderCount"></span>
+            </td> 
+        </tr>
+    </table>
+    <div style="width:96%;background:#fafafa">
+        <canvas id="myChart"></canvas>
+    </div>
+     
+    
+</div> 
+
+ 
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liRealTime").addClass("over");
+        $("#ddRealTimeIndex").addClass("on");
+       
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+        });
+
+        getOrderInfo();
+    });
+     
+      
+    function getOrderInfo() { 
+        $.ajax({
+            url: '@Url.Content("~/RealTime/GetOrderCountInfo")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在查询...'
+                });
+            },
+            success: function (data, textStatus) { 
+                $("#spTotal").text(data.Total);
+                $("#spNewOrderCount").text(data.NewOrderCount);
+                $("#spTakeOrderCount").text(data.Total - data.NewOrderCount);//已接数=总数-新单
+                $("#spHandleOverCount").text(data.Total - data.NewOrderCount - data.WaitForHandleCount);//已处理=总数-新单-待处理
+                $("#spWaitForCallbackCount").text(data.WaitForHandleCount);
+                $("#spFinishedCount").text(data.FinishedCount);
+
+                $("#spTotalToday").text(data.TotalToday);
+                $("#spNewOrderCountToday").text(data.NewOrderCountToday);
+                $("#spTakeOrderCountToday").text(data.TotalToday - data.NewOrderCountToday);//已接数=总数-新单
+                $("#spHandleOverCountToday").text(data.TotalToday - data.NewOrderCountToday - data.WaitForHandleCountToday);//已处理=总数-新单-待处理
+                $("#spWaitForCallbackCountToday").text(data.WaitForHandleCountToday);
+                $("#spFinishedCountToday").text(data.FinishedCountToday);
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+
+        $.ajax({
+            url: '@Url.Content("~/RealTime/GetRealTimeData")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+
+            },
+            beforeSend: function () {
+                //$.messager.progress({
+                //    title: '请稍候',
+                //    text: '正在查询...'
+                //});
+            },
+            success: function (data, textStatus) {
+                refreshBitmap(data.rows);
+            },
+            complete: function () {
+               // $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+              //  $.messager.alert('提示', '操作出错', 'error');
+            }
+        });
+    }
+
+    function refreshBitmap(list) {
+        var arrayLabel = new Array();
+        var arrayOrderCount = new Array();
+        var arrayWaitForTakeCount = new Array();
+        var arrayWaitForHandleCount = new Array();
+        var arrayHandledCount = new Array();
+        var arrayFinishedCount = new Array();
+        for (var i = 0; i < list.length; i++) {
+            arrayLabel.push(list[i].Hour + "点");
+
+            arrayOrderCount.push(list[i].OrderCount);
+            arrayWaitForTakeCount.push(list[i].arrayWaitForTakeCount);
+            arrayWaitForHandleCount.push(list[i].WaitForHandleCount);
+            arrayHandledCount.push(list[i].HandledCount);
+            arrayFinishedCount.push(list[i].FinishedCount);
+        }
+        var data = {
+            labels: arrayLabel,
+            datasets: [{
+                label: '总产生单量',
+                data: arrayOrderCount,
+                borderWidth: 2, //线的粗细
+                borderColor: "rgba(199,8,26,1)",  // 线的颜色
+                fill:false,//是否填充线下方的区域
+               // fillColor: "rgba(8,156,232,1)",
+                backgroundColor: "rgba(199,8,26,1)",
+               // backgroundColor: 'rgba(255, 99, 132, 0.2)', 
+               //  pointColor: "rgba(255,99,132,1)", // 点的填充颜色
+                // 点的边线颜色
+               // pointStrokeColor: "#fff", 
+            },
+            {
+            label: '待接单',
+            data: arrayWaitForTakeCount, 
+            borderWidth: 2, //线的粗细
+            borderColor: "rgba(255,99,132,1)",  // 线的颜色
+            fill: false,//是否填充线下方的区域 
+            backgroundColor: "rgba(255,99,132,1)",
+        }, 
+            {
+                label: '已接单待处理',
+                data: arrayWaitForHandleCount,
+                borderWidth: 2, //线的粗细
+                borderColor: "rgba(244,176,12,1)",  // 线的颜色
+                fill: false,//是否填充线下方的区域 
+                backgroundColor: "rgba(244,176,12,1)",
+            },
+            {
+                label: '处理完成',
+                data: arrayHandledCount,
+                borderWidth: 2, //线的粗细
+                borderColor: "rgba(16,250,5,1)",  // 线的颜色
+                fill: false,//是否填充线下方的区域 
+                backgroundColor: "rgba(16,250,5,1)",
+            },
+            {
+                label: '回传成功',
+                data: arrayFinishedCount,
+                borderWidth: 2, //线的粗细
+                borderColor: "rgba(22,139,16,1)",  // 线的颜色
+                fill: false,//是否填充线下方的区域
+                backgroundColor: "rgba(22,139,16,1)",
+            }
+            ]
+        };
+        var ctx = document.getElementById("myChart").getContext("2d");
+     
+        var myLine = new Chart(ctx, {
+            type: "line", data: data,
+            options: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: '今日每小时内数据统计'
+                }
+                //tooltips: {
+                //    model: 'point'
+                //}
+            }
+        });
+
+       
+    }
+</script>

@@ -1,0 +1,361 @@
+﻿
+@{
+    ViewBag.Title = "用户管理";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<style type="text/css">
+    .label {
+        height: 40px;
+    }
+
+    .datagrid-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .cname {
+        font: bold 16px 微软雅黑;
+        color: #464040;  
+    }
+</style>
+
+<div style="padding-top:20px;margin-left:50px;margin-bottom:20px;">
+
+      
+
+    <div style="margin-top:30px;"> 
+
+        <span>状态:</span>
+        <select id="combState" class="easyui-combobox" style="width:60px;">
+            <option value="">所有</option>
+            <option value="0">正常</option>
+            <option value="2">禁用</option> 
+        </select>
+        <span>注册时间:</span>
+        <input id="dtTakeTimeStart" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+        <span>至</span>
+        <input id="dtTakeTimeEnd" class="easyui-datetimebox" name="birthday"
+               data-options="showSeconds:false" style="width:130px" />
+
+        <input id="tbAddress"class="easyui-textbox" data-options="prompt:'输入账号、姓名、电话查询...'" style="width:240px;height:32px">
+        <a href="javascript:void(0)" onclick="select();" class="easyui-linkbutton c1" data-options="iconCls:'icon-search'" style="width:80px">查询</a>
+        <a href="javascript:void(0)" onclick="clearSelect();" class="easyui-linkbutton c3" data-options="iconCls:'icon-remove'" style="width:80px">清空查询</a>
+     
+        <a id="btn" href="javascript:void(0)" class="easyui-linkbutton c7" data-options="iconCls:'icon-add'"
+           style="width:60px;margin-left:40px;" onclick="$('#addWin').window('open');$('#tbRealName').textbox('textbox').focus();">添加</a>
+    </div>
+    
+</div> 
+<table id="DataGride" style="font-size: 11pt;height:680px;"></table>
+
+ <div id="addWin" class="easyui-window" title="添加用户"
+     data-options="modal:true,closed:true,minimizable:false"
+     style="width:600px;height:500px;;padding:20px;display:none;background:#fff;text-align:center;">
+
+    <table style="text-align:left;margin:auto;">
+        <colgroup>
+            <col width="70"/>
+            <col />
+        </colgroup> 
+        <tr style="height:40px;">
+            <td>姓名：</td>
+            <td><input id="tbRealName" class="easyui-textbox" data-options="prompt:'输入该用户真实姓名..'" style="width:200px;height:32px"></td>
+        </tr>
+        <tr style="height:40px;">
+            <td>用户名：</td>
+            <td><input id="tbUserName" class="easyui-textbox" data-options="prompt:'输入新用户登陆账号..'" style="width:200px;height:32px"></td>
+         </tr>
+        <tr style="height:40px;">
+            <td>密码：</td>
+            <td><input id="tbPwd" class="easyui-textbox" data-options="prompt:'输入新用户密码..'" style="width:200px;height:32px"></td>
+        </tr>
+     
+        <tr style="height:40px;">
+            <td>联系电话：</td>
+            <td><input id="tbPhone" class="easyui-textbox" data-options="prompt:'输入该用户联系电话..'" style="width:200px;height:32px"></td>
+        </tr>
+        <tr style="height:40px;">
+            <td>性别：</td>
+            <td>
+                <select id="combSex" class="easyui-combobox" style="width:60px;">
+                    <option value="1">男</option>
+                    <option value="0">女</option>
+                </select>
+            </td>
+        </tr>
+        <tr style="height:40px;">
+            <td>年龄：</td>
+            <td><input id="tbAge" class="easyui-numberbox"  style="width:40px;height:32px"></td>
+        </tr>
+        <tr style="height:50px;">
+            <td>住址：</td>
+            <td><input id="tbAddress" class="easyui-textbox" data-options="prompt:'输入该用户住址..'" style="width:400px;height:32px"></td>
+        </tr>
+        <tr>
+            <td style="vertical-align:top;margin-top:15px;">备注：</td>
+            <td><input id="tbRemark" class="easyui-textbox" data-options="prompt:'备注..',multiline:true" style="width:400px;height:80px;"></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align:center;padding-top:20px;">
+                <a href="javascript:void(0)" onclick="addUser();" class="easyui-linkbutton c1" data-options="iconCls:'icon-add'" style="width:80px">添加</a>
+                <a href="javascript:void(0)" onclick="$('#addWin').window('close');" class="easyui-linkbutton c3" data-options="iconCls:'icon-cancel'" style="width:80px">取消</a>
+            </td>
+        </tr>
+    </table>
+  
+
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liUserManager").addClass("over");
+        $("#ddUserList").addClass("on");
+        ShowDataGride();
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+        });
+        $('#combSex').combobox({
+            editable: false
+        });
+        
+    });
+
+    var jsonParas = {
+        "likeValue": '',
+        "createTimeStart": '',
+        "createTimeEnd": '' 
+    };
+
+    function select() { 
+        jsonParas.likeValue = $("#tbAddress").textbox('getValue');
+        jsonParas.createTimeStart = $("#dtTakeTimeStart").datetimebox('getValue');
+        jsonParas.createTimeEnd = $("#dtTakeTimeEnd").datetimebox('getValue');
+        ShowDataGride();
+    }
+    
+    function clearSelect() {
+        jsonParas = {
+            "likeValue": '',
+            "createTimeStart": '',
+            "createTimeEnd": ''
+        }; 
+        $("#tbAddress").textbox('clear');
+        ShowDataGride();
+    }
+
+    function ShowDataGride() {
+   
+        $('#DataGride').datagrid({
+            loadMsg: '数据加载中,请稍后...',
+            nowrap: false,
+            striped: true,
+            collapsible: false,
+            remoteSort: true,
+            rownumbers: true,
+            fitColumns: true,
+            singleSelect: false,
+            queryParams: jsonParas,
+            url: '@Url.Content("~/User/GetList")',
+            columns: [
+            [
+              
+              { field: 'UserName', title: '账号', halign: 'center', align: 'left', width: 50, sortable: false, resizable: false },
+              { field: 'RealName', title: '姓名', halign: 'center', align: 'left', width: 40, sortable: false, resizable: false },
+              { field: 'Phone', title: '联系电话', halign: 'center', align: 'left', width: 50, sortable: false, resizable: false },
+              { field: 'Sex', title: '性别', halign: 'center', align: 'center', width: 30, sortable: false, resizable: false },
+              { field: 'Age', title: '年龄', halign: 'center', align: 'center', width: 30, sortable: false, resizable: false },
+              { field: 'Address', title: '地址', halign: 'center', align: 'left', width: 150, sortable: false, resizable: false },
+              { field: 'CreateTime', title: '开通时间', halign: 'center', align: 'center', width: 70, sortable: false, resizable: false },
+              { field: 'Remark', title: '备注', halign: 'center', align: 'left', width: 150, sortable: false, resizable: false },
+              {
+                  field: 'State', title: '状态', halign: 'center', align: 'center', width: 50, sortable: false, resizable: false,
+                  formatter: function (value, row, index) { 
+                      switch (row["State"]) {
+                          case "0"://正常用户 禁用操作
+                             return "<span style='cursor:pointer;color:green;'>正常</span>";
+                              break;
+                          case "2"://已禁用 恢复
+                              return "<span style='cursor:pointer;color:red;'>已禁用</span>";
+                      } 
+                  }
+              },
+                        
+                {
+                    field: 'ID', title: '操作', halign: 'center', align: 'center', width:60, sortable: false, resizable: false,hidden:false,
+                    formatter: function (value, row, index) {
+                        var returnValue;
+                        switch (row["State"]) {
+                            case "0"://正常用户 禁用操作
+                                returnValue = "<span style='cursor:pointer;color:red;' onclick='updateUserState(" + row["ID"] + ",2)'>" + "禁用</span>";
+                                break;
+                            case "2"://已禁用 恢复
+                                returnValue = "<span style='cursor:pointer;color:green;' onclick='updateUserState(" + row["ID"] + ",0)'>" + "恢复</span>";
+                                break;
+                        }
+                        returnValue += "<span style='cursor:pointer;color:orange;margin-left:10px;' onclick='resetPwd(" + row["ID"] + ")'>" + "还原密码</span>";
+                        return returnValue;
+                    }
+                }
+            ]],
+            onClickRow: function (rowIndex, rowData) {
+                $(this).datagrid('unselectRow', rowIndex);
+            },
+            pageList: [10, 15, 20],
+            pageSize: '15',
+            pagination: true
+        }); 
+    }
+     
+
+    var jsonUser = {
+        "UserName": '',
+        "Password": '',
+        "RealName": '',
+        "Phone": '',
+        "Sex": 0,
+        "Age": '20',
+        "Address": '',
+        "Remark": '' 
+    };
+      
+    function addUser() {
+        jsonUser.RealName = $("#tbRealName").textbox('getValue');
+        jsonUser.UserName = $("#tbUserName").textbox('getValue');
+        jsonUser.Password = $("#tbPwd").textbox('getValue');
+        jsonUser.Phone = $("#tbPhone").textbox('getValue');
+        jsonUser.Sex = $("#combSex").combobox('getValue');
+        jsonUser.Age = $("#tbAge").textbox('getValue');
+        jsonUser.Address = $("#tbAddress").textbox('getValue');
+        jsonUser.Remark = $("#tbRemark").textbox('getValue');
+        if (jsonUser.Age == '') {
+            jsonUser.Age = 20;
+        }
+        if (jsonUser.UserName.trim() == '') { 
+            $.messager.alert('提示', '请填写用户名!', 'warning', function () {
+                $('#tbUserName').textbox('textbox').focus();
+            }); 
+            return;
+        }
+        if (jsonUser.Password.trim() == '') {
+            $.messager.alert('提示', '请为该账号设置密码!', 'warning', function () {
+                $('#tbPwd').textbox('textbox').focus();
+            });  
+            return;
+        }
+        $.ajax({
+            url: '@Url.Content("~/User/AddUser")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                strModel: JSON.stringify(jsonUser)
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在添加...'
+                });
+            },
+            success: function (data, textStatus) { 
+                if (data) {
+                    clearUserInput();
+                    $('#addWin').window('close');
+                    ShowDataGride();
+                    $.messager.alert('提示', '添加成功!');
+                    $("#tbRealName").textbox('textbox').focus();
+                }
+                else {
+                    $.messager.alert('提示', '添加失败,该用户名可能已被占用！', 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+
+    function clearUserInput() {
+        $("#tbRealName").textbox('clear');
+        $("#tbUserName").textbox('clear');
+        $("#tbPwd").textbox('clear');
+        $("#tbPhone").textbox('clear');
+        $("#combSex").combobox('clear');
+        $("#tbAge").textbox('clear');
+        $("#tbAddress").textbox('clear');
+        $("#tbRemark").textbox('clear');
+    }
+
+    function updateUserState(userId, state) { 
+        var notice = state == '0' ? "确定恢复该账号？" : "确定禁用该账号？";
+        $.messager.confirm('操作确认', notice, function (r) {
+            if (r) {
+                $.ajax({
+                    url: '@Url.Content("~/User/UpdateState")',
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        userId: userId,
+                        state: state
+                    },
+                    beforeSend: function () {
+                        $.messager.progress({
+                            title: '请稍候',
+                            text: '操作进行中...'
+                        });
+                    },
+                    success: function (data, textStatus) {
+                        if (data) { 
+                            ShowDataGride();
+                            $.messager.alert('提示', '操作成功!'); 
+                        }
+                        else {
+                            $.messager.alert('提示', '操作失败！', 'info');
+                        }
+                    },
+                    complete: function () {
+                        $.messager.progress('close');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+                });
+            }
+        }); 
+    }
+
+    function resetPwd(userId) {
+        $.messager.confirm('操作确认', '确定还原该用户密码?', function (r) {
+            if (r) {
+                $.ajax({
+                    url: '@Url.Content("~/User/ResetPassword")',
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        userId: userId,
+                        pwd: '111111'
+                    },
+                    beforeSend: function () {
+                        $.messager.progress({
+                            title: '请稍候',
+                            text: '操作进行中...'
+                        });
+                    },
+                    success: function (data, textStatus) {
+                        if (data) { 
+                            ShowDataGride();
+                            $.messager.alert('提示', '密码重置成功，该用户当前密码为【111111】!'); 
+                        }
+                        else {
+                            $.messager.alert('提示', '操作失败！', 'info');
+                        }
+                    },
+                    complete: function () {
+                        $.messager.progress('close');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+                });
+            }
+        }); 
+    }
+
+</script>

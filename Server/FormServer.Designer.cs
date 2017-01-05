@@ -45,6 +45,8 @@
             this.lb_photoCount = new System.Windows.Forms.Label();
             this.lb_zipFileCount = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.tb_callbackUrl = new System.Windows.Forms.TextBox();
+            this.label12 = new System.Windows.Forms.Label();
             this.tb_once_callback_num = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.tb_callback_thread_num = new System.Windows.Forms.TextBox();
@@ -69,8 +71,6 @@
             this.tb_ftp_dir = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.fileWatcher = new System.IO.FileSystemWatcher();
-            this.tb_callbackUrl = new System.Windows.Forms.TextBox();
-            this.label12 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -267,6 +267,23 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "配置";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // tb_callbackUrl
+            // 
+            this.tb_callbackUrl.Location = new System.Drawing.Point(199, 204);
+            this.tb_callbackUrl.Name = "tb_callbackUrl";
+            this.tb_callbackUrl.Size = new System.Drawing.Size(338, 25);
+            this.tb_callbackUrl.TabIndex = 24;
+            this.tb_callbackUrl.Text = "http://116.228.72.129:6688/irds/rcv/reco_rep/addData.do";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(58, 208);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(106, 15);
+            this.label12.TabIndex = 23;
+            this.label12.Text = "订单回传Url：";
             // 
             // tb_once_callback_num
             // 
@@ -479,23 +496,6 @@
             this.fileWatcher.EnableRaisingEvents = true;
             this.fileWatcher.Filter = "*.flag";
             this.fileWatcher.SynchronizingObject = this;
-            // 
-            // tb_callbackUrl
-            // 
-            this.tb_callbackUrl.Location = new System.Drawing.Point(199, 204);
-            this.tb_callbackUrl.Name = "tb_callbackUrl";
-            this.tb_callbackUrl.Size = new System.Drawing.Size(338, 25);
-            this.tb_callbackUrl.TabIndex = 24;
-            this.tb_callbackUrl.Text = "http://116.228.72.129:6688/irds/rcv/reco_rep/addData.do";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(58, 208);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(106, 15);
-            this.label12.TabIndex = 23;
-            this.label12.Text = "订单回传Url：";
             // 
             // FormServer
             // 

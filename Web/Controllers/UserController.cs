@@ -28,65 +28,188 @@ namespace Merchandiser.Controllers.SystemManager
         {
             return View();
         }
+        public ActionResult ChangePassword()
+        {
+            return View();
+        }
+   
+        public JsonResult ChangePwd(string oldPwd, string newPwd)
+        {
+            if(newPwd.Trim()=="") return Json(new { result = false, msg = "修改失败,新密码不合格" });
+            BLL_User bll = new BLL_User();
+            Model_User user = Session["USER"] == null ? null : (Model_User)Session["USER"];
+            if (user == null) {
+                return Json(new { result=false,msg="修改失败" });
+            }
+            bool result = bll.UpdatePassword(user.ID, oldPwd, newPwd);
+            return Json(new { result = result, msg = result?"修改成功！":"修改失败,输入的当前密码有误!" });
+        }
 
         [HttpPost]
         public JsonResult UserLogin(string username, string password, string idencode)
         {
             JsonResult jr = new JsonResult();
-           // string iCode = Session["IdentifyCode"].ToString();
-            //if (!iCode.Equals(idencode.ToUpper()))
-            //{
-            //    jr.Data = -1;
-            //    return jr;
-            //}
-            //else
-            //{
+           string iCode = Session["IdentifyCode"].ToString();
+            if (!iCode.Equals(idencode.ToUpper()))
+            {
+                return Json(new { result = false, msg="登陆失败，验证码错误！" }, JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
                 BLL_User bUser = new BLL_User();
-                Model_User user = bUser.Login(username, password); 
-                jr.Data = user == null ? 0 : 1;
+                Model_User user = bUser.Login(username, password);
                 if (user != null)
                 {
-                //     BLL.BPermission bll = new BLL.BPermission(); 
-                //     BRole bRole = new BRole();
-                //     Role role = bRole.GetModel(user.uRoleID);
-                //user.RoleName = role.rName;
-                //if (role.rPower != "")
-                //{
-                //    DataSet ds = bll.GetList(" ID in (" + role.rPower + ") ");
-                //    DataTable dt = ds.Tables[0];
-                //    user.Permissions = bll.DataTableToList(dt);
-                //}
-                //else {
-                //    user.Permissions = new List<Model.Permission>();
-                //}
-                 Session["USER"] = user;
-               // Session.Add("USER", user);
+                    //     BLL.BPermission bll = new BLL.BPermission(); 
+                    //     BRole bRole = new BRole();
+                    //     Role role = bRole.GetModel(user.uRoleID);
+                    //user.RoleName = role.rName;
+                    //if (role.rPower != "")
+                    //{
+                    //    DataSet ds = bll.GetList(" ID in (" + role.rPower + ") ");
+                    //    DataTable dt = ds.Tables[0];
+                    //    user.Permissions = bll.DataTableToList(dt);
+                    //}
+                    //else {
+                    //    user.Permissions = new List<Model.Permission>();
+                    //}
+                    Session["USER"] = user;
+                    // Session.Add("USER", user);
                     //Session.Add("UserType", usermodel.UserType); 
+                    if (user.State == Model_User.STATE_FORBIDDEN)
+                    {
+                        return Json(new { result = false,msg="登陆失败：用户被禁用，如有疑问请联系管理员！"},
+                            JsonRequestBehavior.AllowGet);
+                    } 
+                    return Json(new { result = true, group =user.GroupID}, JsonRequestBehavior.AllowGet);
                 }
-                return jr;
-           // }
+                else {
+                    return Json(new { result = false, msg = "登陆失败，用户名或密码错误！" }, JsonRequestBehavior.AllowGet);
+                }
+
+      
+             }
         }
 
-        //public JsonResult GetList()
-        //{
-        //BLL.BUser bll = new BLL.BUser();
-        //DataSet ds = bll.GetAllList();
-        //DataTable dt = ds.Tables[0];
-        //var query = from p in dt.AsEnumerable()
-        //            select new
-        //            {
-        //                ID = p["ID"].ToString(),
-        //                Phone = p["uPhone"].ToString(),
-        //                NickName = p["uNickName"].ToString(),
-        //                Email = p["uEmail"].ToString(),
-        //                RoleID = p["uRoleID"].ToString(),
-        //                DepartmentID = p["uDepartmentId"].ToString(),
-        //                MasterUID = p["uMasterUserID"].ToString(),
-        //                LastLoginTime = p["uLastLoginTime"].ToString()
-        //            };
-        //return Json(query, JsonRequestBehavior.AllowGet);
-        //}
+        public JsonResult GetList(int page, int rows, string likeValue, string createTimeStart, string createTimeEnd)
+        {
+            BLL_User bll = new BLL_User();
+            string strWhere = " GroupID=3 ";
+            if (!string.IsNullOrWhiteSpace(likeValue)) {
+                strWhere += " and (UserName like '%";
+                strWhere += likeValue;
+                strWhere += "%' or RealName like '%";
+                strWhere += likeValue;
+                strWhere += "%' or Phone like '%";
+                strWhere += likeValue;
+                strWhere += "%') ";
+            }
+            if (!string.IsNullOrEmpty(createTimeStart)) {
+                strWhere += " and CreateTime >= '";
+                strWhere += createTimeStart;
+                strWhere += "' "; 
+            }
+            if (!string.IsNullOrEmpty(createTimeEnd))
+            {
+                strWhere += " and CreateTime <= '";
+                strWhere += createTimeEnd;
+                strWhere += "' ";
+            }
+            int total = 0;
+            DataSet ds = bll.GetTakeOrderUsers(page,rows,strWhere,out total);
+            DataTable dt = ds.Tables[0];
+            var query = from p in dt.AsEnumerable()
+                        select new
+                        {
+                            ID = p["ID"].ToString(),
+                            UserName = p["UserName"].ToString(),
+                            RealName = p["RealName"].ToString(),
+                            Phone = p["Phone"].ToString(),
+                            Sex = p["Sex"].ToString()=="0"?"女":"男",
+                            Age = p["Age"].ToString(),
+                            Address = p["Address"].ToString(),
+                            CreateTime = p["CreateTime"].ToString(),
+                            Remark = p["Remark"].ToString(),
+                            State = p["State"].ToString()
+                        };
+            return Json(query, JsonRequestBehavior.AllowGet);
+        }
 
+        public JsonResult AddUser(string strModel)
+        {
+            Model_User model = SerializeHelper.JsonToObject<Model_User>(strModel);
+            BLL_User bll = new BLL_User();
+            model.CreateTime = DateTime.Now;
+            model.GroupID = 3;
+            model.State = Model_User.STATE_NORMAL;
+            bool result = bll.Add(model);
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+
+
+        public JsonResult UpdateState(int userId, int state)
+        { 
+            BLL_User bll = new BLL_User(); 
+            bool result = bll.UpdateState(userId,state);
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult ResetPassword(int userId, string pwd)
+        {
+            BLL_User bll = new BLL_User();
+            bool result = bll.UpdatePassword(userId, pwd);
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult OrderCount() {
+            return View();
+        }
+
+        public JsonResult GetUserOrderCountList(int page, int rows,int timeType, string timeStart, string timeEnd,string likeValue)
+        {
+            BLL_Statistics bll = new BLL_Statistics(); 
+            StringBuilder strWhere = new StringBuilder();
+            strWhere.Append(" DisposeUserId!=0 ");//去掉未被领取的单 
+            if (!string.IsNullOrWhiteSpace(likeValue))
+            {
+                strWhere.Append(" and (UserName like '%");
+                strWhere.Append(likeValue);
+                strWhere.Append("%' or RealName like '%");
+                strWhere.Append(likeValue);
+                strWhere.Append("%' or Phone like '%");
+                strWhere.Append(likeValue);
+                strWhere.Append("%') "); 
+            }
+            if (!string.IsNullOrEmpty(timeStart))
+            {
+                strWhere.Append(" and ");
+                strWhere.Append(timeType==0? "TakeTime>='" : "HandleTime>='");//
+                strWhere.Append(timeStart);
+                strWhere.Append("' "); 
+            }
+            if (!string.IsNullOrEmpty(timeEnd))
+            {
+                strWhere.Append(" and ");
+                strWhere.Append(timeType == 0 ? "TakeTime<='" : "HandleTime<='");//
+                strWhere.Append(timeEnd);
+                strWhere.Append("' ");
+            }
+            int total = 0;
+            DataSet ds = bll.GetUserOrderCountList(page, rows, strWhere.ToString(), out total);
+            DataTable dt = ds.Tables[0];
+            var query = from p in dt.AsEnumerable()
+                        select new
+                        {
+                            UserID = p["UserID"].ToString(),
+                            RealName = p["RealName"].ToString(),
+                            UserName = p["UserName"].ToString(),
+                            OrderCount = p["OrderCount"].ToString(),
+                            WaitForHandleCount = p["WaitForHandleCount"].ToString(),
+                            HandledCount = p["HandledCount"].ToString() 
+                        };
+            return Json(query, JsonRequestBehavior.AllowGet);
+        }
 
         //public ActionResult Permission()
         //{

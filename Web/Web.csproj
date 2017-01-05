@@ -170,7 +170,10 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.cs" />
+    <Compile Include="Controllers\SystemManagerController .cs" />
+    <Compile Include="Controllers\RealTimeController.cs" />
     <Compile Include="Controllers\AddressController.cs" />
+    <Compile Include="Controllers\DataStatisticsController.cs" />
     <Compile Include="Controllers\OrderController.cs" />
     <Compile Include="Controllers\SessionFilterAttribute.cs" />
     <Compile Include="Controllers\TestController.cs" />
@@ -706,6 +709,13 @@
     <Content Include="Views\Order\Index.cshtml" />
     <Content Include="Views\Order\Dispose.cshtml" />
     <Content Include="Views\Shared\_LayoutDispose.cshtml" />
+    <Content Include="Views\Shared\_LayoutAdmin.cshtml" />
+    <Content Include="Views\Address\List.cshtml" />
+    <Content Include="Views\RealTime\Index.cshtml" />
+    <Content Include="Views\User\Index.cshtml" />
+    <Content Include="Views\User\OrderCount.cshtml" />
+    <Content Include="Views\User\ChangePassword.cshtml" />
+    <Content Include="Views\SystemManager\Database.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

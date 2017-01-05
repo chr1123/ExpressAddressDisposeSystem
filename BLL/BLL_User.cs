@@ -1,6 +1,7 @@
 using EADS.Model;
 using EADS.DAL;
 using System.Collections.Generic;
+using System.Data;
 
 namespace EADS.BLL
 {
@@ -22,15 +23,8 @@ namespace EADS.BLL
             return model;
         }
 
-        /// <summary>
-        /// 添加记录
-        /// </summary>
-        /// <param name="model">DAL_User实体类</param>
-        /// <returns>新增记录的ID</returns>
-        public int Add(Model_User model)
-        {
-            return dal.Add(model);
-        }
+        
+    
         /// <summary>
         /// 更新记录
         /// </summary>
@@ -62,5 +56,51 @@ namespace EADS.BLL
             return dal.Get(id);
         }
 
+        public DataSet GetTakeOrderUsers(int page, int rows, string strWhere, out int total)
+        { 
+            dal.OpenConnect();
+            DataSet result = dal.GetListByPage(page,rows,strWhere,out total);
+            dal.CloseConnect();
+            return result;
+        }
+
+        public bool Add(Model_User model)
+        {
+            dal.OpenConnect();
+            bool result = dal.Add(model)>0;
+            dal.CloseConnect();
+            return result;
+        }
+
+
+        /// <summary>
+        /// 修改指定用户状态
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public bool UpdateState(int id, int state)
+        {
+            dal.OpenConnect();
+            bool result = dal.UpdateState(id,state);
+            dal.CloseConnect();
+            return result;
+        }
+
+        public bool UpdatePassword(int id, string pwd)
+        {
+            dal.OpenConnect();
+            bool result = dal.UpdatePassword(id, pwd);
+            dal.CloseConnect();
+            return result;
+        }
+
+        public bool UpdatePassword(int id, string oldPwd, string newPwd)
+        {
+            dal.OpenConnect();
+            bool result = dal.UpdatePassword(id, oldPwd,newPwd);
+            dal.CloseConnect();
+            return result;
+        }
     }
 }

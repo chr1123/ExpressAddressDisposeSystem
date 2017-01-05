@@ -16,16 +16,67 @@ namespace EADS.BLL
            
         }
 
-
-
-        public DataSet GetMatchAddress(string address)
-        { 
-
+        public int Insert(string sql)
+        {
             dal.OpenConnect();
-            DataSet result = dal.GetMatchAddress(address);
+            int result =  dal.Insert(sql);
+            dal.CloseConnect();
+            return result;
+        }
+
+        //public DataSet GetListOfLv1(int page, int pageSize)
+        //{
+        //    dal.OpenConnect();
+        //    DataSet result = dal.GetListOfLv1(page,pageSize);
+        //    dal.CloseConnect();
+        //    return result;
+        //}
+        //public DataSet GetListOfLv2(int page, int pageSize)
+        //{
+        //    dal.OpenConnect();
+        //    DataSet result = dal.GetListOfLv2(page, pageSize);
+        //    dal.CloseConnect();
+        //    return result;
+        //}
+        //public DataSet GetListOfLv3(int page, int pageSize)
+        //{
+        //    dal.OpenConnect();
+        //    DataSet result = dal.GetListOfLv3(page, pageSize);
+        //    dal.CloseConnect();
+        //    return result;
+        //}
+        //public DataSet GetListOfLv4(int page, int pageSize)
+        //{
+        //    dal.OpenConnect();
+        //    DataSet result = dal.GetListOfLv4(page, pageSize);
+        //    dal.CloseConnect();
+        //    return result;
+        //}
+
+
+        public DataSet GetMatchAddress(string address,int rows)
+        {  
+            dal.OpenConnect();
+            DataSet result = dal.GetMatchAddress(address,rows);
             dal.CloseConnect();
             return result; 
         }
 
+        public DataSet GetList(int page, int rows, string address, out int total)
+        {
+            dal.OpenConnect();
+            DataSet result = dal.GetList(page, rows, address,out total);
+            dal.CloseConnect();
+            return result;
+        }
+
+
+        public bool Add(string address)
+        {
+            dal.OpenConnect();
+            bool result = dal.Add(address);
+            dal.CloseConnect();
+            return result;
+        }
     }
 }

@@ -15,43 +15,7 @@ namespace EADS.BLL
         public BLL_Order()
         {
         }
-        /// <summary>
-        /// 添加记录
-        /// </summary>
-        /// <param name="model">EADS.Model.torder实体类</param>
-        /// <returns>新增记录的ID</returns>
-        public int Add(Model_Order model)
-        {
-            return dal.Add(model);
-        }
-        /// <summary>
-        /// 更新记录
-        /// </summary>
-        /// <param name="model">EADS.Model.torder实体类</param>
-        public bool Update(Model_Order model)
-        {
-            return dal.Update(model);
-        }
-        /// <summary>
-        /// 删除记录
-        /// </summary>
-        public int Delete(int id)
-        { 
-            return dal.Delete(id);
-        }
-  
-        public long GetCount()
-        {
-            return dal.GetCount();
-        }
-        /// <summary>
-        /// 根据主键查询一条记录
-        /// </summary>
-        public Model_Order GetModel(int id)
-        {
-            return dal.GetModel(id);
-        }
-
+        
 
         public DataSet GetListByPage(string where, int page, int pageSize, out int total) {
             dal.OpenConnect();

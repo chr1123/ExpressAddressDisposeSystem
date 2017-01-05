@@ -1,0 +1,141 @@
+﻿
+@{
+    ViewBag.Title = "地址匹配基础库";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<style type="text/css">
+    .label {
+        height: 40px;
+    }
+
+    .datagrid-cell {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .cname {
+        font: bold 16px 微软雅黑;
+        color: #464040; 
+       
+    }
+</style>
+
+<div style="padding-top:20px;margin-left:50px;margin-bottom:20px;">
+
+      
+
+    <div style="margin-top:30px;"> 
+        <input id="tbAddress"class="easyui-textbox" data-options="prompt:'输入查询地址...'" style="width:240px;height:32px">
+        <a href="javascript:void(0)" onclick="select();" class="easyui-linkbutton c1" data-options="iconCls:'icon-search'" style="width:80px">查询</a>
+        <a href="javascript:void(0)" onclick="clearSelect();" class="easyui-linkbutton c3" data-options="iconCls:'icon-remove'" style="width:80px">清空查询</a>
+     
+       
+    </div>
+    
+</div>
+<div style="padding-left:50px;float:left"> 
+    <table id="DataGride" style="font-size: 11pt;height:680px;width:600px;"></table>
+</div>
+ <div style="margin-left:700px;margin-top:200px;">  
+     <input id="tbNewAdd" class="easyui-textbox" data-options="prompt:'输入新增地址...'" style="width:360px;height:32px;">
+     <a id="btn" href="javascript:void(0)" class="easyui-linkbutton c7" data-options="iconCls:'icon-add'"
+        style="width:60px;margin-left:40px;" onclick="addAddress();">添加</a>
+ </div>
+
+
+ 
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $("#liBaseAddress").addClass("over");
+        $("#ddBaseAddressList").addClass("on");
+        ShowDataGride();
+        $(".datagrid-cell").find("span").each(function () {
+            $(this).css('font-size', 16).css("color", "#523212");
+        }); 
+    });
+
+    var jsonParas = {
+        "address": '' 
+    };
+
+    function select() { 
+        jsonParas.address = $("#tbAddress").textbox('getValue');
+        ShowDataGride();
+    }
+    
+    function clearSelect() {
+        jsonParas = {
+            "address": '' 
+        }; 
+        $("#tbAddress").textbox('clear');
+        ShowDataGride();
+    }
+
+    function ShowDataGride() {
+   
+        $('#DataGride').datagrid({
+            loadMsg: '数据加载中,请稍后...',
+            nowrap: false,
+            striped: true,
+            collapsible: false,
+            remoteSort: true,
+            rownumbers: true,
+            fitColumns: true,
+            singleSelect: false,
+            queryParams: jsonParas,
+            url: '@Url.Content("~/Address/GetList")',
+            columns: [
+            [
+              
+              { field: 'Address', title: '地址', halign: 'center', align: 'left', width: 50, sortable: false, resizable: false },  
+                {
+                    field: 'ID', title: '操作', halign: 'center', align: 'center', width: 30, sortable: false, resizable: false,hidden:true,
+                    formatter: function (value, row, index) {
+                        
+                    }
+                }
+            ]],
+            onClickRow: function (rowIndex, rowData) {
+                $(this).datagrid('unselectRow', rowIndex);
+            },
+            pageList: [10, 15, 20],
+            pageSize: '15',
+            pagination: true
+        }); 
+    }
+     
+      
+    function addAddress() {
+        var address = $("#tbNewAdd").textbox('getValue');
+        $.ajax({
+            url: '@Url.Content("~/Address/Add")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                address: address
+            },
+            beforeSend: function () {
+                $.messager.progress({
+                    title: '请稍候',
+                    text: '正在添加...'
+                });
+            },
+            success: function (data, textStatus) { 
+                if (data.result) {
+                    $("#tbNewAdd").textbox('clear');
+                    ShowDataGride();
+                    $.messager.alert('提示', '添加成功!');
+                }
+                else {
+                    $.messager.alert('提示', '添加失败,改地址可能已存在！', 'info');
+                }
+            },
+            complete: function () {
+                $.messager.progress('close');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) { $.messager.alert('提示', '操作出错', 'error'); }
+        });
+    }
+</script>

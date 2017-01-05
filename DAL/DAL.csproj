@@ -142,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DAL_Base.cs" />
+    <Compile Include="DAL_Statistics.cs" />
     <Compile Include="DAL_BaseAddress.cs" />
     <Compile Include="DArea.cs" />
     <Compile Include="DCity.cs" />

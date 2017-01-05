@@ -48,33 +48,64 @@
             text-align:center;"> 
           <span style="font-size:45px;color:ivory;">上海赛迅数据处理系统</span>  
             <div style="float:right;width:300px;padding-top:15px;">
-                <span id="spCurUser" style="font-size:15pt;color:#f2fdd9;margin-right:40px;">@ViewBag.User.RealName</span>
+                <span id="spCurUser" style="font-size:15pt;color:#f2fdd9;margin-right:40px;"></span>
                 <span id="spExitLogin" style="font-size:12pt;color:#ffd800;cursor:pointer" onclick="loginOut();">退出登录</span>
             </div>
 </div>
      <div class="ad-menu" id="ad-menu">
                     <div class="ad-list">
-                        <ul> 
-                            <li id="liOrder">
-                                <div class="li-item"><em class="scm li-ico ic1"></em>面单管理<span class="scm arrow"></span></div>
+                        <ul>
+                            <li id="liRealTime">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>
+                                <span id="spNote" style="font-size:11pt;">实时数据</span>
+                                <span class="scm arrow"></span></div>
                                 <dl>
-                                    <dd id="ddOrderList">
-                                        <a href="@Url.Content("~/Order/Index")" class="dd-item">接单列表<span class="scm dd-ar"></span></a>
-                                    </dd>
-                                    <dd id="ddOrderDispose">
-                                        <a href="@Url.Content("~/Order/Dispose")" class="dd-item">处理<span class="scm dd-ar"></span></a>
-                                    </dd>  
+                                    <dd id="ddRealTimeIndex" >
+                                        <a href="@Url.Content("~/RealTime/Index")" class="dd-item">当前数据
+                                        <span class="scm dd-ar"></span></a>
+                                    </dd> 
                                 </dl>
-                            </li>  
-                            <li id="liUserSetting">
-                                <div class="li-item"><em class="scm li-ico ic1"></em>个人中心<span class="scm arrow"></span></div>
+                            </li>
+                            <li id="liUserManager">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>用户管理<span class="scm arrow"></span></div>
                                 <dl>
-                                    <dd id="ddChangedPwd">
-                                        <a href="@Url.Content("~/User/ChangePassword")" class="dd-item">修改密码<span class="scm dd-ar"></span></a>
+                                    <dd id="ddUserList" >
+                                        <a href="@Url.Content("~/User/Index")" class="dd-item">
+                                            用户列表
+                                            <span class="scm dd-ar"></span>
+                                        </a>
                                     </dd>
-                                    
+                                    <dd id="ddUserOrder">
+                                        <a href="@Url.Content("~/User/OrderCount")" class="dd-item">
+                                            刷单数据
+                                            <span class="scm dd-ar"></span>
+                                        </a>
+                                    </dd>
                                 </dl>
-                            </li>  
+                            </li>
+                            <li id="liBaseAddress">
+                                <div class="li-item">
+                                    <em class="scm li-ico ic1"></em>
+                                    <span id="spBaseAddress" style="font-size:11pt;">地址库管理 </span>
+                                    <span class="scm arrow"></span>
+                                </div>
+                                <dl>
+                                    <dd id="ddBaseAddressList">
+                                        <a href="@Url.Content("~/Address/List")" class="dd-item">
+                                            地址列表
+                                            <span class="scm dd-ar"></span>
+                                        </a>
+                                    </dd>
+                                </dl>
+                            </li> 
+                            <li id="liSystemManager">
+                                <div class="li-item"><em class="scm li-ico ic1"></em>数据备份<span class="scm arrow"></span></div>
+                                <dl>
+                                    <dd id="ddDatabase">
+                                        <a href="@Url.Content("~/SystemManager/Database")" class="dd-item">数据备份<span class="scm dd-ar"></span></a>
+                                    </dd>
+                                </dl>
+                            </li> 
                         </ul>
                     </div>
                 </div>
@@ -93,7 +124,6 @@
         $(function () { 
                 $(".ad-menu").niceScroll({cursorborder:"0 none",cursorcolor:"#1a1a19",cursoropacitymin:"0",boxzoom:false}); 
         })
-
         function loginOut() {
             window.location.href = "@Url.Content("~/Home/Login")";
         }

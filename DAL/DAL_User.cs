@@ -23,8 +23,8 @@ namespace EADS.DAL
         public int Add(Model_User model)
         {
             string sql = @"INSERT INTO tuser
-				(UserName,Password,GroupID,RealName,Phone,Sex,Age,Birthday,Address,CreateTime,Remark) 
-				VALUES(@UserName,@Password,@GroupID,@RealName,@Phone,@Sex,@Age,@Birthday,@Address,@CreateTime,@Remark);
+				(UserName,Password,GroupID,RealName,Phone,Sex,Age,Birthday,Address,CreateTime,Remark,State) 
+				VALUES(@UserName,@Password,@GroupID,@RealName,@Phone,@Sex,@Age,@Birthday,@Address,@CreateTime,@Remark,@State);
 				SELECT LAST_INSERT_ID();";
             MySqlParameter[] parameters = new MySqlParameter[]{
                 model.UserName == null ? new MySqlParameter("@UserName", MySqlDbType.VarChar, 40) { Value = DBNull.Value } : new MySqlParameter("@UserName", MySqlDbType.VarChar, 40) { Value = model.UserName },
@@ -37,7 +37,8 @@ namespace EADS.DAL
                 model.Birthday == null ? new MySqlParameter("@Birthday", MySqlDbType.DateTime, -1) { Value = DBNull.Value } : new MySqlParameter("@Birthday", MySqlDbType.DateTime, -1) { Value = model.Birthday },
                 model.Address == null ? new MySqlParameter("@Address", MySqlDbType.VarChar, 40) { Value = DBNull.Value } : new MySqlParameter("@Address", MySqlDbType.VarChar, 40) { Value = model.Address },
                 new MySqlParameter("@CreateTime", MySqlDbType.DateTime, -1){ Value = model.CreateTime },
-                model.Remark == null ? new MySqlParameter("@Remark", MySqlDbType.VarChar, 100) { Value = DBNull.Value } : new MySqlParameter("@Remark", MySqlDbType.VarChar, 100) { Value = model.Remark }
+                model.Remark == null ? new MySqlParameter("@Remark", MySqlDbType.VarChar, 100) { Value = DBNull.Value } : new MySqlParameter("@Remark", MySqlDbType.VarChar, 100) { Value = model.Remark },
+                  new MySqlParameter("@State", MySqlDbType.Int32, 11){ Value = model.State }
             };
             int maxID = -1;
             dbHelper.ExecuteScalar(sql, parameters, out maxID);
@@ -129,7 +130,8 @@ namespace EADS.DAL
             } 
             model.Address = row["Address"].ToString();
             model.CreateTime = DateTime.Parse(row["CreateTime"].ToString());
-            model.Remark = row["Remark"].ToString();  
+            model.Remark = row["Remark"].ToString();
+            model.State = int.Parse(row["State"].ToString());
             return model;
         }
         /// <summary>
@@ -181,7 +183,48 @@ namespace EADS.DAL
             return null;
         }
 
-      
+
+        public DataSet GetListByPage(int page, int rows, string strWhere, out int total)
+        {
+            string sql = "SELECT * FROM tuser ";
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                sql += " where ";
+                sql += strWhere;
+            } 
+            sql += " ORDER BY ID ASC ";
+            sql += "limit ";
+            sql += (page - 1) * rows;
+            sql += ",";
+            sql += rows;
+            DataSet ds = dbHelper.GetList(sql);
+            string sqlCount = "select count(ID) from tuser ";
+            if (!string.IsNullOrEmpty(strWhere.Trim()))
+            {
+                sqlCount += " where ";
+                sqlCount += strWhere;
+            }
+            total = int.Parse(dbHelper.GetSingle(sqlCount).ToString());
+            return ds;
+        }
+        public bool UpdateState(int id, int state)
+        {
+            string sql = "update tuser set State = "+state+" where ID="+id;
+            return dbHelper.ExecuteSql(sql) > 0;
+        }
+
+        public bool UpdatePassword(int id,string pwd)
+        {
+            string sql = "update tuser set Password = '" + pwd + "' where ID=" + id;
+            return dbHelper.ExecuteSql(sql) > 0;
+        }
+
+        public bool UpdatePassword(int id, string oldPwd,string newPwd)
+        {
+            string sql = "update tuser set Password = '" + newPwd + "' where ID=" + id
+                +" and Password='"+oldPwd+"'";
+            return dbHelper.ExecuteSql(sql) > 0;
+        }
 
     }
 }

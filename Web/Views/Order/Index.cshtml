@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "订单列表";
+    ViewBag.Title = "我的订单列表";
     Layout = "~/Views/Shared/_LayoutDispose.cshtml";
 }
 <style type="text/css">
@@ -25,11 +25,7 @@
     <span>接单条数</span>
     <select id="combTakeSize" class="easyui-combobox" style="width:80px;">
         <option value="10">10条</option>
-        <option value="50">50条</option>
-        <option value="100">100条</option>
-        <option value="200">200条</option>
-        <option value="500">500条</option>
-        <option value="1000">1000条</option>
+        <option value="20">20条</option> 
     </select>
     <a id="btn" href="javascript:void(0)" class="easyui-linkbutton c7" data-options="iconCls:'icon-save'"
        style="width:60px;" onclick="takeOrder();">接单</a>

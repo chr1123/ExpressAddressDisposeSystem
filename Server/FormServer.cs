@@ -68,19 +68,19 @@ namespace EADS.Server
             }
         }
          
-        private void fileSystemWatcher_EventHandle(object sender, FileSystemEventArgs e)  //文件增删改时被调用的处理方法  
-        {
-            //LogHelper.WriteLog("压缩包changed事件...");
-            //.WriteLine(" <<====== 压缩包 ：" + e.Name + " Type:" + (int)e.ChangeType);
-            if (_serverRuning)
-            {
-                _fileHandler.handleFileChanged(e.Name, e.FullPath);
-            }
-            else
-            {
-                //未开启的时候如何处理
-            }
-        }
+        //private void fileSystemWatcher_EventHandle(object sender, FileSystemEventArgs e)  //文件增删改时被调用的处理方法  
+        //{
+        //    //LogHelper.WriteLog("压缩包changed事件...");
+        //    //.WriteLine(" <<====== 压缩包 ：" + e.Name + " Type:" + (int)e.ChangeType);
+        //    if (_serverRuning)
+        //    {
+        //        _fileHandler.handleFileChanged(e.Name, e.FullPath);
+        //    }
+        //    else
+        //    {
+        //        //未开启的时候如何处理
+        //    }
+        //}
 
         private void btn_save_setting_Click(object sender, EventArgs e)
         {
@@ -121,7 +121,9 @@ namespace EADS.Server
                     _iniFile.WriteInteger("SYSTEM", "CallbackThreadCount", 1);
                     _iniFile.WriteInteger("SYSTEM", "OnceCallbackOrderCount", 3);
 
+                    _iniFile.WriteInteger("SYSTEM", "ZipFileHandleThreadNum",5);
                     
+
 
                 } 
             } 
@@ -158,15 +160,21 @@ namespace EADS.Server
                 return;
             }
             btn_start_server.Text = "暂停";
-            fileWatcher.Path = tb_ftp_dir.Text.Trim();
-            fileWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
-            this.fileWatcher.Changed += new FileSystemEventHandler(fileSystemWatcher_EventHandle);
+        //    fileWatcher.Path = tb_ftp_dir.Text.Trim();
+         //   fileWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+        //    this.fileWatcher.Created += new FileSystemEventHandler(fileSystemWatcher_EventHandle);
+         //   this.fileWatcher.Changed += new FileSystemEventHandler(fileSystemWatcher_EventHandle);
             _serverRuning = true;
             cb_autoRun.Enabled = false;
             btn_save_setting.Enabled = false;
             setInputEnable(false);
             _iniFile.WriteBool("SYSTEM", "AutoStart", cb_autoRun.CheckState == CheckState.Checked);
-
+            //处理ftp目录下未处理的文件
+            _fileHandler = new FileHandler();
+            _fileHandler.CountChangedListener = this;
+            _fileHandler.Start();
+            _orderHandler = new OrderHandler();
+            _orderHandler.setNumChangedListener(this); 
             _orderHandler.StartHandle();
             LogHelper.WriteLog("开启服务...");
         }
@@ -182,6 +190,7 @@ namespace EADS.Server
             cb_autoRun.Enabled = true;
             setInputEnable(true);
             _orderHandler.Stop();
+            _fileHandler.Stop();
             LogHelper.WriteLog("关闭服务...");
         }
 
@@ -334,9 +343,64 @@ namespace EADS.Server
         private void btn_test_Click(object sender, EventArgs e)
         {
             //======================测试使用======================
+            //BLL.BLL_BaseAddress bll = new BLL.BLL_BaseAddress();
+            //DataSet ds1 = bll.GetListOfLv1(0, 100);
+            //DataSet ds2 = bll.GetListOfLv2(0, 1000);
+            //DataSet ds3 = bll.GetListOfLv3(0, 5000);
 
-         
-           // string result = orderHandler.callbackOrder();
+            //int row1 = ds1.Tables[0].Rows.Count; //34
+            //int row2 = ds2.Tables[0].Rows.Count;//344
+            //int row3 = ds3.Tables[0].Rows.Count;//3148  44000  47000
+
+            //StringBuilder sql = new StringBuilder();
+            //sql.Append("INSERT INTO tbaseaddress (Address) VALUES ");
+            //foreach (DataRow row in ds1.Tables[0].Rows)
+            //{
+            //    sql.Append("('");
+            //    sql.Append(row["name"].ToString());
+            //    sql.Append("'),");
+            //}
+            //sql.Remove(sql.Length - 1,1);
+
+            //StringBuilder sql = new StringBuilder();
+            //sql.Append("INSERT INTO tbaseaddress (Address) VALUES ");
+            //foreach (DataRow row in ds3.Tables[0].Rows)
+            //{
+            //    sql.Append("('");
+            //    sql.Append(row["name1"].ToString());
+
+            //    if (row["name2"].ToString()!="市辖区"&& row["name2"].ToString() != "县" && row["name2"].ToString() != "市辖县") {
+            //        sql.Append(row["name2"].ToString());
+            //    }
+            //    sql.Append(row["name3"].ToString());
+            //    sql.Append("'),");
+            //}
+            //sql.Remove(sql.Length - 1, 1);
+
+              
+           // 4.4w条地址数据 分44次取每次1000条
+            //for (int i = 0; i < 44; i++)
+            //{
+
+            //    DataSet ds4 = bll.GetListOfLv4(i,1000);
+            //    StringBuilder sql = new StringBuilder();
+            //    sql.Append("INSERT INTO tbaseaddress (Address) VALUES ");
+            //    foreach (DataRow row in ds4.Tables[0].Rows)
+            //    {
+            //        sql.Append("('");
+            //        sql.Append(row["name1"].ToString());
+
+            //        if (row["name2"].ToString() != "市辖区" && row["name2"].ToString() != "县" && row["name2"].ToString() != "市辖县")
+            //        {
+            //            sql.Append(row["name2"].ToString());
+            //        }
+            //        sql.Append(row["name3"].ToString());
+            //        sql.Append(row["name4"].ToString());
+            //        sql.Append("'),");
+            //    }
+            //    sql.Remove(sql.Length - 1, 1);
+            //   // int succeed = bll.Insert(sql.ToString());
+            //}
 
         }
 

@@ -22,7 +22,7 @@ namespace EADS.Web.Controllers
     public class OrderController : Controller
     {
         public ActionResult Index()
-        {
+        { 
             return View();
         }
 
@@ -133,15 +133,21 @@ namespace EADS.Web.Controllers
             ViewBag.Unhandle = unHandle;
             return View(order);
         }
-
-       
-
+         
 
         public JsonResult SubmitOrder(string strModel)
         {
             Model_Order model = SerializeHelper.JsonToObject<Model_Order>(strModel);
             //此处应该先判断订单状态
-            BLL_Order bll = new BLL_Order(); 
+            BLL_Order bll = new BLL_Order();
+            model.RecipientAddress = model.RecipientAddress.Trim().Replace(",", "").Replace(".","").Replace("，", "").Replace("。", "").Replace("‘", "")
+                .Replace("“", "").Replace("！", "").Replace("？", "").Replace("\\", "").Replace("/", "").Replace("~", "").Replace("@", "")
+                .Replace("%", "").Replace("^", "").Replace("?", "").Replace("!", "");
+            if (model.RecipientAddress == "1" || model.RecipientAddress == "11") {
+                model.RecipientAddress = "";
+                model.DestinationCity = "";
+                model.ResultCode = 1;//1表示识别失败
+            }
             model.State = Model_Order.STATE_HANDLED_WAIT_FOR_CALLBACK;
             model.HandleTime = DateTime.Now;
             bool subSucceed = bll.UpdateAddressInfo(model);
@@ -158,76 +164,7 @@ namespace EADS.Web.Controllers
                 orderCount=count,waitForHandle=unHandle,orderID=order==null?0:order.ID,
                 imgSrc=order==null?null:CommonConst.GetPhotoResUrlForWeb(order.ImagePath) }, JsonRequestBehavior.AllowGet);
         }
+ 
 
-        public JsonResult Callback(string ids)
-        {
-            ids = ids.TrimEnd(',');
-            //此处应该先判断订单状态
-            BLL_Order bll = new BLL_Order();
-            List<Model_Order> list = bll.GetListByOrderIds(ids);
-            XmlHandler xmlHandler = new XmlHandler();
-            string xml = xmlHandler.getXmlStrngByList(list); 
-            string result = DoPost("url", xml);
-            return Json(new { result = result, msg = "保存成功"}, JsonRequestBehavior.AllowGet);
-
-        }
-
-        private const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1";
-        private CookieContainer CC = new CookieContainer();
-        private String DoPost(String url, String content)
-        {
-            string html = "";
-            StreamReader reader = null;
-            HttpWebRequest webReqst = null;
-            //如果是发送HTTPS请求    
-            if (url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
-            {
-                //ServicePointManager.ServerCertificateValidationCallback = 
-                //    new RemoteCertificateValidationCallback(CheckValidationResult);
-                //webReqst = WebRequest.Create(url) as HttpWebRequest;
-                //webReqst.ProtocolVersion = HttpVersion.Version10;
-            }
-            else
-            {
-                webReqst = WebRequest.Create(url) as HttpWebRequest;
-            }
-            webReqst.Method = "POST";
-            //webReqst.UserAgent = DefaultUserAgent;
-            webReqst.ContentType = "text/xml";
-            webReqst.ContentLength = content.Length;
-            webReqst.CookieContainer = CC;
-            webReqst.Timeout = 30000;
-            webReqst.ReadWriteTimeout = 30000;
-            try
-            {
-                byte[] data = Encoding.Default.GetBytes(content);
-                Stream stream = webReqst.GetRequestStream();
-                stream.Write(data, 0, data.Length);
-
-
-                HttpWebResponse webResponse = (HttpWebResponse)webReqst.GetResponse();
-                //  BugFix_CookieDomain(CC);
-                if (webResponse.StatusCode == HttpStatusCode.OK && webResponse.ContentLength < 1024 * 1024)
-                {
-                    stream = webResponse.GetResponseStream();
-                    stream.ReadTimeout = 30000;
-                    if (webResponse.ContentEncoding == "gzip")
-                    {
-                        reader = new StreamReader(new GZipStream(stream, CompressionMode.Decompress), Encoding.Default);
-                    }
-                    else
-                    {
-                        reader = new StreamReader(stream, Encoding.Default);
-                    }
-                    html = reader.ReadToEnd();
-                }
-            }
-            catch
-            {
-
-            }
-
-            return html;
-        }
     }
 }

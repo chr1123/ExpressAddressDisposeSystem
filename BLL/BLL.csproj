@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BArea.cs" />
+    <Compile Include="BLL_Statistics.cs" />
     <Compile Include="BLL_Test.cs" />
     <Compile Include="BCity.cs" />
     <Compile Include="BLL_Order.cs" />

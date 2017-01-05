@@ -143,6 +143,7 @@
   <ItemGroup>
     <Compile Include="CommonConst.cs" />
     <Compile Include="CompressHelper.cs" />
+    <Compile Include="DatabaseBackupHelper.cs" />
     <Compile Include="ExcelHelper.cs" />
     <Compile Include="HttpProc.cs" />
     <Compile Include="ImageHelper.cs" />
